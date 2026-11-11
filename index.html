@@ -102,6 +102,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .sh-fav-btn{width:100%;height:38px;border-radius:9px;border:1.5px dashed rgba(192,96,0,.45);background:var(--ora2);color:var(--ora);font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;}
 .sh-fav-tools{display:flex;gap:6px;margin-left:auto;flex-shrink:0;}
 .sh-fav-tools button{height:28px;min-width:28px;padding:0 8px;border-radius:7px;border:1px solid var(--b2);background:var(--s2);color:var(--tx3);font-size:12px;cursor:pointer;font-family:var(--sans);}
+.sh-note{font-size:11px;color:var(--tx3);margin:-4px 0 8px;}
 .sh-fav-empty{font-size:12px;color:var(--tx3);text-align:center;padding:14px;border:1.5px dashed var(--b2);border-radius:var(--rl);background:var(--s1);line-height:1.6;}
 .sh-foot{font-size:11px;color:var(--tx3);line-height:1.6;text-align:center;padding:4px 6px 0;}
 .sh-foot a{color:var(--blue);}
@@ -845,12 +846,14 @@ svg{display:block;}
     </div>
 
     <div class="sh-sec">
-      <div class="lbl">🚿 세차장 브랜드 · 앱</div>
+      <div class="lbl">🚿 세차장 앱 바로가기</div>
+      <div class="sh-note">외부 사이트 또는 앱 스토어로 이동합니다. 이 앱과 제휴 관계가 아닙니다.</div>
       <div id="sh-washes" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
     <div class="sh-sec">
-      <div class="lbl">🛒 세차용품샵</div>
+      <div class="lbl">🛒 세차용품샵 바로가기</div>
+      <div class="sh-note">외부 쇼핑몰로 이동합니다. 이 앱과 제휴 관계가 아닙니다.</div>
       <div id="sh-shops" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
@@ -2579,9 +2582,9 @@ function endFromBanner(){
    - contact   : 광고·제휴 문의처 (이메일 'mailto:...' 또는 URL). ''이면 '준비 중'으로 표시
    - showEmptySlot : 배너가 없을 때 '광고·제휴 배너 영역' 안내를 보일지 여부 */
 var SHOP_CONFIG={
-  utm:'washzone_timer',
-  contact:'',
-  showEmptySlot:true,
+  utm:'selfwashtimer',
+  contact:'mailto:selfwashtimer.help@gmail.com',
+  showEmptySlot:false,
   banners:[
     /* 예시
     {title:'겨울 세차 특가',sub:'○○ 셀프세차장 첫 방문 20% 할인',url:'https://example.com',img:'',bg:'linear-gradient(135deg,#0b3a75,#0070c0)',start:'2026-12-01',end:'2026-12-31'},
@@ -2656,7 +2659,7 @@ function shopCard(item,sponsored){
 var K_FAV='dt_fav_places';
 function favLoad(){
   var v=ls(K_FAV,null);
-  if(v===null){v=[{id:uid(),name:'워시존 개러지 김포IC점',q:'워시존 개러지 김포IC점'}];ss(K_FAV,v);}
+  if(v===null){v=[];}
   return v;
 }
 function favSave(v){ss(K_FAV,v);}
@@ -2744,7 +2747,7 @@ function renderShopPanel(){
   var w=document.getElementById('sh-washes');w.innerHTML='';SHOP_CONFIG.washes.forEach(function(it){w.appendChild(shopCard(it,false));});
   var s2=document.getElementById('sh-shops');s2.innerHTML='';SHOP_CONFIG.shops.forEach(function(it){s2.appendChild(shopCard(it,false));});
   var c=SHOP_CONFIG.contact;
-  document.getElementById('sh-foot').innerHTML='\'광고\' 표시가 있는 항목은 제휴·협찬 콘텐츠입니다.<br>광고·제휴 문의: '
+  document.getElementById('sh-foot').innerHTML='소개된 브랜드·상표는 각 권리자의 소유이며, 이 앱과 제휴 관계가 아닙니다.<br>\'광고\' 표시가 있는 항목만 제휴·협찬 콘텐츠입니다.<br>광고·제휴 문의: '
     +(c?'<a href="'+esc(c)+'" target="_blank" rel="noopener">'+esc(c.replace(/^mailto:/,''))+'</a>':'준비 중');
 }
 
