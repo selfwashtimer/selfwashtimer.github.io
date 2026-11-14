@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="세차 타이머">
 <meta name="theme-color" content="#0b6fb8">
 <meta name="description" content="셀프세차 단계별 타이머 · 약제 희석 계산 · 코스 관리">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -486,7 +488,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 /* 편집 카드 공통 */
 .edit-card{background:var(--s1);border:1px solid var(--b2);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow);}
 .edit-card-head{display:flex;align-items:center;padding:11px 14px;gap:10px;cursor:pointer;}
-.edit-card-icon{font-size:18px;flex-shrink:0;}
+.edit-card-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;}
 .edit-card-title{font-size:14px;font-weight:700;flex:1;}
 .edit-card-sub{font-size:11px;color:var(--tx3);font-family:var(--mono);}
 .edit-card-chev{color:var(--tx3);transition:transform .2s;flex-shrink:0;}
@@ -598,6 +600,15 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .home-cancel{width:100%;height:44px;border-radius:12px;border:none;background:var(--s2);font-family:var(--sans);font-size:14px;color:var(--tx2);cursor:pointer;margin-top:4px;}
 
 svg{display:block;}
+.ci-flow,.edit-card-flow{font-size:11.5px;color:var(--tx2);line-height:1.55;margin-top:3px;word-break:keep-all;overflow-wrap:anywhere;}
+/* 드래그 정렬 */
+.drag-h{flex-shrink:0;width:30px;height:38px;margin:-6px 0 -6px -8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--tx3);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:6px;}
+.drag-h:active{cursor:grabbing;background:var(--s2);}
+.ord-num{flex-shrink:0;min-width:30px;height:24px;padding:0 6px;border-radius:12px;background:var(--s2);border:1px solid var(--b2);font-size:12px;font-weight:700;font-family:var(--mono);color:var(--tx2);display:flex;align-items:center;justify-content:center;}
+.sorting .sortable{transition:transform .15s;}
+.sortable.dragging{transition:none!important;position:relative;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.18);border-color:var(--acc);opacity:.97;}
+.sortable.dragging .ord-num{background:var(--acc);color:#fff;border-color:var(--acc);}
+.sorting{user-select:none;-webkit-user-select:none;}
 /* 예약 시간 강조 */
 .book-sec{border-radius:var(--rl);padding:12px;margin-left:-12px;margin-right:-12px;border:1.5px solid transparent;transition:background .2s,border-color .2s;}
 .book-sec.unset{background:#fff4e5;border:1.5px dashed #e0861a;}
@@ -1198,9 +1209,22 @@ var K_DIL='dt_dil_settings', K_HISTORY='dt_history', K_APP='dt_app_settings';
 function ls(key,def){try{var r=localStorage.getItem(key);return r?JSON.parse(r):def;}catch(e){return def;}}
 function ss(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 
-var steps=ls(K_STEPS,DEFAULT_STEPS);
-var products=ls(K_PRODUCTS,DEFAULT_PRODUCTS);
-var courses=ls(K_COURSES,DEFAULT_COURSES);
+/* ── 보안: 외부 파일·저장 데이터 정화 (HTML/스크립트 주입 차단) ── */
+var ID_KEYS={id:1,productId:1};
+function safeId(v){return String(v==null?'':v).replace(/[^A-Za-z0-9_\-]/g,'').slice(0,64);}
+function cleanTxt(v){return String(v).replace(/[<>"`\\]/g,'').slice(0,500);}
+function cleanDeep(v,key){
+  if(Array.isArray(v)){return v.slice(0,300).map(function(x){return cleanDeep(x,key==='stepIds'?'id':null);});}
+  if(v&&typeof v==='object'){var o={};Object.keys(v).slice(0,60).forEach(function(k){var kk=safeId(k);if(kk)o[kk]=cleanDeep(v[k],kk);});return o;}
+  if(typeof v==='string')return ID_KEYS[key]?safeId(v):cleanTxt(v);
+  if(typeof v==='number')return isFinite(v)?v:0;
+  if(typeof v==='boolean'||v===null)return v;
+  return null;
+}
+function cleanList(v,def){return Array.isArray(v)?cleanDeep(v):def;}
+var steps=cleanList(ls(K_STEPS,DEFAULT_STEPS),DEFAULT_STEPS);
+var products=cleanList(ls(K_PRODUCTS,DEFAULT_PRODUCTS),DEFAULT_PRODUCTS);
+var courses=cleanList(ls(K_COURSES,DEFAULT_COURSES),DEFAULT_COURSES);
 var dilSettings=ls(K_DIL,{});
 var appSettings=ls(K_APP,DEFAULT_APP_SETTINGS);
 
@@ -1297,6 +1321,7 @@ function getCourseKeywords(c){
   (c.stepIds||[]).forEach(function(sid){
     if(skip[sid])return;
     var k=short[sid];
+    if(!k&&!/^(prep|cleanup|rinse|final)/.test(sid)){var st=steps.find(function(x){return x.id===sid;});if(st&&st.name&&!/헹굼|준비|정리/.test(st.name))k=String(st.name).replace(/\s*\(.*?\)\s*/g,'').slice(0,10);}
     if(k&&!seen[k]){seen[k]=true;keys.push(k);}
   });
   return keys.join('\u200b · ');
@@ -1575,7 +1600,8 @@ function renderCourseInfoPanel(){
     var n=courseStepsOf(c).length;
     card.innerHTML='<div class="ci-head"><div class="ci-icon">'+c.icon+'</div><div style="flex:1;min-width:0;">'
       +'<div class="ci-title">'+esc(c.name)+(isSel?'<span class="ci-badge">선택됨</span>':'')+'</div>'
-      +'<div class="ci-sub">'+toHM(getCourseEst(c))+' · '+n+'단계 · '+esc(c.rec||'')+'</div></div>'
+      +'<div class="ci-sub">'+toHM(getCourseEst(c))+' · '+n+'단계 · '+esc(c.rec||'')+'</div>'
+      +(getCourseKeywords(c)?'<div class="ci-flow">'+esc(getCourseKeywords(c))+'</div>':'')+'</div>'
       +'<div class="cd-chev ci-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>';
     var body=document.createElement('div');body.className='ci-body';
     var detail=document.createElement('div');detail.style.cssText='display:flex;flex-direction:column;gap:8px;';
@@ -2233,17 +2259,63 @@ function refreshCustomizePanes(){
 }
 
 /* ── 단계 목록 ── */
+/* ── 드래그 정렬 (손잡이 ≡ 를 길게 끌어서 순서 변경) ── */
+function editRow(num,icon,title,sub,editFn,id,flow){
+  var card=document.createElement('div');card.className='edit-card sortable';card.dataset.id=id;
+  card.innerHTML='<div class="edit-card-head">'
+    +'<div class="drag-h" title="끌어서 순서 변경" aria-label="순서 변경 손잡이">⠿</div>'
+    +'<div class="ord-num">'+num+'</div>'
+    +'<div class="edit-card-icon">'+esc(icon)+'</div>'
+    +'<div style="flex:1;min-width:0;"><div class="edit-card-title">'+esc(title)+'</div><div class="edit-card-sub">'+esc(sub)+'</div>'+(flow?'<div class="edit-card-flow">'+esc(flow)+'</div>':'')+'</div>'
+    +'<button class="btn-sm" type="button">편집</button></div>';
+  card.querySelector('.btn-sm').addEventListener('click',function(e){editFn(id,e);});
+  return card;
+}
+function scrollParentOf(el){var n=el.parentElement;while(n&&n!==document.body){var o=getComputedStyle(n).overflowY;if(o==='auto'||o==='scroll')return n;n=n.parentElement;}return document.scrollingElement;}
+function makeSortable(container,getArr,onDrop){
+  container.querySelectorAll('.drag-h').forEach(function(h){
+    h.addEventListener('pointerdown',function(ev){
+      if(ev.button>0)return;ev.preventDefault();
+      var card=h.closest('.sortable');var cards=[].slice.call(container.querySelectorAll('.sortable'));
+      var from=cards.indexOf(card);if(from<0)return;
+      var sc=scrollParentOf(container);var startY=ev.clientY,startScroll=sc.scrollTop;
+      var rects=cards.map(function(c){return c.getBoundingClientRect();});
+      var gap=cards.length>1?(rects[1].top-rects[0].bottom):8;var step=rects[from].height+gap;
+      var to=from,lastY=ev.clientY,raf=null;
+      card.classList.add('dragging');container.classList.add('sorting');
+      try{h.setPointerCapture(ev.pointerId);}catch(e){}
+      if(navigator.vibrate)try{navigator.vibrate(10);}catch(e){}
+      function layout(){
+        var dy=lastY-startY+(sc.scrollTop-startScroll);
+        card.style.transform='translateY('+dy+'px)';
+        var mid=rects[from].top+rects[from].height/2+dy;
+        to=from;
+        for(var i=0;i<cards.length;i++){if(i===from)continue;var m=rects[i].top+rects[i].height/2;if(i<from&&mid<m){to=Math.min(to,i);}if(i>from&&mid>m){to=Math.max(to,i);}}
+        cards.forEach(function(c,i){if(i===from)return;var sh=0;if(from<to&&i>from&&i<=to)sh=-step;if(from>to&&i<from&&i>=to)sh=step;c.style.transform=sh?'translateY('+sh+'px)':'';});
+        cards.forEach(function(c,i){var n=c.querySelector('.ord-num');if(!n)return;var pos=i;if(i===from)pos=to;else if(from<to&&i>from&&i<=to)pos=i-1;else if(from>to&&i<from&&i>=to)pos=i+1;n.textContent=pos+1;});
+      }
+      function autoScroll(){
+        raf=null;var r=sc===document.scrollingElement?{top:0,bottom:window.innerHeight}:sc.getBoundingClientRect();
+        var edge=60,v=0;if(lastY<r.top+edge)v=-Math.ceil((r.top+edge-lastY)/6);else if(lastY>r.bottom-edge-60)v=Math.ceil((lastY-(r.bottom-edge-60))/6);
+        if(v){sc.scrollTop+=v;layout();raf=requestAnimationFrame(autoScroll);}
+      }
+      function move(e){lastY=e.clientY;layout();if(!raf)raf=requestAnimationFrame(autoScroll);}
+      function up(){
+        h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',up);h.removeEventListener('pointercancel',up);
+        if(raf)cancelAnimationFrame(raf);
+        cards.forEach(function(c){c.style.transform='';});card.classList.remove('dragging');container.classList.remove('sorting');
+        if(to!==from){var arr=getArr();var it=arr.splice(from,1)[0];arr.splice(to,0,it);onDrop();}
+      }
+      h.addEventListener('pointermove',move);h.addEventListener('pointerup',up);h.addEventListener('pointercancel',up);
+    });
+  });
+}
 function renderStepsList(){
   var container=document.getElementById('steps-list');container.innerHTML='';
   steps.forEach(function(s,idx){
-    var card=document.createElement('div');card.className='edit-card';
-    card.innerHTML='<div class="edit-card-head"><div class="edit-card-icon">📋</div><div style="flex:1;min-width:0;"><div class="edit-card-title">'+s.name+'</div><div class="edit-card-sub">'+s.est+'분 · '+(s.prod||'')+'</div></div>'
-      +'<div style="display:flex;gap:6px;align-items:center;">'
-      +(idx>0?'<button class="btn-sm" onclick="moveStep(\''+s.id+'\',-1,event)">↑</button>':'')
-      +(idx<steps.length-1?'<button class="btn-sm" onclick="moveStep(\''+s.id+'\',1,event)">↓</button>':'')
-      +'<button class="btn-sm" onclick="openStepModal(\''+s.id+'\',event)">편집</button></div></div>';
-    container.appendChild(card);
+    container.appendChild(editRow(idx+1,'📋',s.name,s.est+'분 · '+(s.prod||''),openStepModal,s.id));
   });
+  makeSortable(container,function(){return steps;},function(){saveSteps();renderStepsList();renderSetup();});
 }
 
 function moveStep(id,dir,e){
@@ -2316,12 +2388,10 @@ function deleteStep(){
 /* ── 약제 목록 ── */
 function renderProductsList(){
   var container=document.getElementById('products-list');container.innerHTML='';
-  products.forEach(function(p){
-    var card=document.createElement('div');card.className='edit-card';
-    card.innerHTML='<div class="edit-card-head"><div class="edit-card-icon">🧪</div><div style="flex:1;min-width:0;"><div class="edit-card-title">'+p.name+'</div><div class="edit-card-sub">'+p.prod+' · '+(p.levels||[]).map(function(l){return l.label;}).join(', ')+'</div></div>'
-      +'<button class="btn-sm" onclick="openProductModal(\''+p.id+'\',event)">편집</button></div>';
-    container.appendChild(card);
+  products.forEach(function(p,idx){
+    container.appendChild(editRow(idx+1,'🧪',p.name,(p.prod||'')+' · '+(p.levels||[]).map(function(l){return l.label;}).join(', '),openProductModal,p.id));
   });
+  makeSortable(container,function(){return products;},function(){saveProducts();renderProductsList();renderSetup();});
 }
 
 /* ── 약제 모달 ── */
@@ -2421,15 +2491,9 @@ function deleteProduct(){
 function renderCoursesList(){
   var container=document.getElementById('courses-list');container.innerHTML='';
   courses.forEach(function(c,idx){
-    var est=getCourseEst(c);
-    var card=document.createElement('div');card.className='edit-card';
-    card.innerHTML='<div class="edit-card-head"><div class="edit-card-icon">'+c.icon+'</div><div style="flex:1;min-width:0;"><div class="edit-card-title">'+c.name+'</div><div class="edit-card-sub">'+toHM(est)+' · '+(c.stepIds||[]).length+'단계 · '+c.rec+'</div></div>'
-      +'<div style="display:flex;gap:6px;align-items:center;">'
-      +(idx>0?'<button class="btn-sm" onclick="moveCourse(\''+c.id+'\',-1,event)">↑</button>':'')
-      +(idx<courses.length-1?'<button class="btn-sm" onclick="moveCourse(\''+c.id+'\',1,event)">↓</button>':'')
-      +'<button class="btn-sm" onclick="openCourseModal(\''+c.id+'\',event)">편집</button></div></div>';
-    container.appendChild(card);
+    container.appendChild(editRow(idx+1,c.icon,c.name,toHM(getCourseEst(c))+' · '+(c.stepIds||[]).length+'단계 · '+(c.rec||''),openCourseModal,c.id,getCourseKeywords(c)));
   });
+  makeSortable(container,function(){return courses;},function(){saveCourses();renderCoursesList();renderSetup();});
 }
 
 function moveCourse(id,dir,e){
@@ -2570,12 +2634,13 @@ function importData(e){
   reader.onload=function(ev){
     try{
       var data=JSON.parse(ev.target.result);
-      if(!data.steps||!data.courses){alert('올바른 설정 파일이 아닙니다.');return;}
+      if(!data||!Array.isArray(data.steps)||!Array.isArray(data.courses)){alert('올바른 설정 파일이 아닙니다.');return;}
+      if(ev.target.result.length>2000000){alert('파일이 너무 큽니다.');return;}
       if(!confirm('가져오면 현재 설정이 덮어써집니다. 계속할까요?'))return;
-      steps=data.steps||steps;
-      products=data.products||products;
-      courses=data.courses||courses;
-      if(data.appSettings)appSettings=data.appSettings;
+      steps=cleanDeep(data.steps);
+      products=Array.isArray(data.products)?cleanDeep(data.products):products;
+      courses=cleanDeep(data.courses);
+      if(data.appSettings&&typeof data.appSettings==='object'){var as=cleanDeep(data.appSettings);appSettings={appName:typeof as.appName==='string'?as.appName:appSettings.appName,location:typeof as.location==='string'?as.location:(appSettings.location||'')};}
       dilSettings={};saveDilSettings();
       saveSteps();saveProducts();saveCourses();ss(K_APP,appSettings);
       selCourse=courses.length?courses[0].id:null;
