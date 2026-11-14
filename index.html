@@ -552,6 +552,14 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .emoji-grid{display:flex;flex-wrap:wrap;gap:6px;}
 .emoji-btn{width:36px;height:36px;border-radius:8px;background:var(--s2);border:1.5px solid var(--b2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .emoji-btn.sel{border-color:var(--acc);background:var(--acc2);}
+.level-rows.single .pt-del,#pm-levels.single .pt-del{visibility:hidden;}
+.emoji-more{font-size:20px;font-weight:700;color:var(--tx2);letter-spacing:-1px;}
+.emoji-more.on{background:var(--tx);color:#fff;border-color:var(--tx);}
+.emoji-more-panel{margin-top:8px;padding:8px 10px 10px;border:1.5px solid var(--b2);border-radius:10px;background:var(--s1);max-height:240px;overflow-y:auto;}
+.emoji-more-h{font-size:10.5px;font-weight:700;color:var(--tx3);margin:6px 0 5px;font-family:var(--mono);}
+.emoji-more-h:first-child{margin-top:0;}
+.emoji-more-grid{display:flex;flex-wrap:wrap;gap:5px;}
+.emoji-btn.sm{width:32px;height:32px;font-size:16px;color:var(--tx);}
 
 /* 리셋 섹션 */
 .danger-zone{background:var(--red2);border:1px solid rgba(192,48,0,.2);border-radius:var(--rl);padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
@@ -2409,6 +2417,7 @@ function openProductModal(id,e){
   /* 레벨 */
   var levelsEl=document.getElementById('pm-levels');levelsEl.innerHTML='';
   (p?p.levels:[]).forEach(function(lv){addLevelRow(lv);});
+  if(!levelsEl.children.length)addLevelRow({label:'기본',ratio:''});
   updateLevelAddBtn();
   openModal('product-modal');
 }
@@ -2416,17 +2425,21 @@ function addLevelRow(lv){
   var levelsEl=document.getElementById('pm-levels');
   if(levelsEl.children.length>=3)return;
   var row=document.createElement('div');row.className='level-row';
-  var labelInp=document.createElement('input');labelInp.type='text';labelInp.className='level-label-input';labelInp.placeholder='예: 약(1:100)';labelInp.value=lv?lv.label:'';
+  var labelInp=document.createElement('input');labelInp.type='text';labelInp.className='level-label-input';labelInp.placeholder='예: 보통 오염';labelInp.value=lv?String(lv.label||'').replace(/\s*\(1:\s*\d+(\.\d+)?\)\s*$/,''):'';
   var ratioInp=document.createElement('input');ratioInp.type='number';ratioInp.className='level-ratio-input';ratioInp.placeholder='100';ratioInp.value=lv?lv.ratio:'';
   var unit=document.createElement('span');unit.style.cssText='font-size:11px;color:var(--tx3);font-family:var(--mono);white-space:nowrap;';unit.textContent='1:N';
   var del=document.createElement('button');del.className='pt-del';del.innerHTML='×';
-  del.addEventListener('click',function(){row.remove();updateLevelAddBtn();});
+  del.addEventListener('click',function(){
+    if(levelsEl.children.length<=1){labelInp.value='기본';ratioInp.value='';ratioInp.focus();return;}
+    row.remove();updateLevelAddBtn();});
   row.appendChild(labelInp);row.appendChild(ratioInp);row.appendChild(unit);row.appendChild(del);
   levelsEl.appendChild(row);updateLevelAddBtn();
 }
 function updateLevelAddBtn(){
   var btn=document.getElementById('pm-add-level-btn');
-  if(btn)btn.style.display=document.getElementById('pm-levels').children.length>=3?'none':'flex';
+  var el=document.getElementById('pm-levels');
+  if(btn)btn.style.display=el.children.length>=3?'none':'flex';
+  el.classList.toggle('single',el.children.length<=1);
 }
 function saveProduct(){
   var name=document.getElementById('pm-name').value.trim();
@@ -2434,8 +2447,12 @@ function saveProduct(){
   var rows=document.querySelectorAll('#pm-levels .level-row');
   var levels=Array.from(rows).map(function(row){
     var inputs=row.querySelectorAll('input');
-    return{label:inputs[0].value.trim(),ratio:parseInt(inputs[1].value)||10};
-  }).filter(function(l){return l.label;});
+    var r=parseInt(inputs[1].value),lb=inputs[0].value.trim();
+    if(!(r>0))return null;
+    lb=lb.replace(/\s*\(1:\s*\d+(\.\d+)?\)\s*$/,'');
+    return{label:(lb||'기본')+'(1:'+r+')',ratio:r};
+  }).filter(Boolean);
+  if(!levels.length){alert('희석 비율(1:N의 N)을 1개 이상 입력해주세요.');var fi=document.querySelector('#pm-levels .level-ratio-input');if(fi)fi.focus();return;}
   var prod={
     id:editingProductId||uid(),
     name:name,prod:document.getElementById('pm-prod').value.trim(),
@@ -2506,6 +2523,44 @@ function moveCourse(id,dir,e){
 
 /* 아이콘 목록 */
 var ICONS=['💧','🧪','⚡','🛡','✨','🪟','👑','💎','🚗','🔥','🌟','🏆','⭐','🎯','🛠'];
+var ICON_MORE=[
+  ['단순 기호',['●','○','■','□','▲','△','◆','◇','★','☆','♥','♡','♠','♣','✚','✖','✔','➜','◎','◐','▣','▶','♪','✦']],
+  ['숫자·문자',['①','②','③','④','⑤','⑥','⑦','⑧','⑨','Ⓐ','Ⓑ','Ⓒ','Ⓓ','Ⓢ','Ⓦ','Ⓟ']],
+  ['차량·이동',['🚙','🚕','🏎','🚐','🛻','🚚','🏍','🚲','🛞','⛽','🅿','🛣']],
+  ['세차·도구',['🧽','🧴','🪣','🧹','🧼','🫧','🚿','🪥','🔧','🔨','🧰','🧯','🪜','🧤']],
+  ['날씨·계절',['☀','⛅','☁','🌧','⛈','❄','🌈','🍂','🌸','🌙','🌊','💨']],
+  ['색 동그라미',['🔴','🟠','🟡','🟢','🔵','🟣','🟤','⚫','⚪','🟥','🟧','🟨','🟩','🟦','🟪','⬛']],
+  ['기타',['❤','👍','👌','💪','🎉','📌','🔖','🏷','🗓','⏰','⏱','🔒','🧊','🌿','🍀','🐢','🐇','🦄']]
+];
+function renderIconPicker(selIcon){
+  var emojiEl=document.getElementById('cm-emoji');emojiEl.innerHTML='';
+  function pick(em){selIcon=em;renderIconPicker(em);}
+  var list=ICONS.slice();
+  if(selIcon&&list.indexOf(selIcon)<0)list.push(selIcon);
+  list.forEach(function(em){
+    var btn=document.createElement('div');btn.className='emoji-btn'+(em===selIcon?' sel':'');
+    btn.textContent=em;btn.addEventListener('click',function(){pick(em);});
+    emojiEl.appendChild(btn);
+  });
+  var more=document.createElement('div');more.className='emoji-btn emoji-more'+(emojiEl.dataset.open==='1'?' on':'');
+  more.textContent='⋯';more.title='아이콘 더 보기';
+  emojiEl.appendChild(more);
+  var panel=document.getElementById('cm-emoji-more');
+  if(!panel){panel=document.createElement('div');panel.id='cm-emoji-more';panel.className='emoji-more-panel';var row=emojiEl.parentNode.parentNode;row.parentNode.insertBefore(panel,row.nextSibling);}
+  panel.innerHTML='';panel.style.display=emojiEl.dataset.open==='1'?'block':'none';
+  ICON_MORE.forEach(function(g){
+    var h=document.createElement('div');h.className='emoji-more-h';h.textContent=g[0];panel.appendChild(h);
+    var grid=document.createElement('div');grid.className='emoji-more-grid';
+    g[1].forEach(function(em){
+      var b=document.createElement('div');b.className='emoji-btn sm'+(em===selIcon?' sel':'');b.textContent=em;
+      b.addEventListener('click',function(){emojiEl.dataset.open='0';pick(em);});
+      grid.appendChild(b);
+    });
+    panel.appendChild(grid);
+  });
+  more.addEventListener('click',function(){emojiEl.dataset.open=emojiEl.dataset.open==='1'?'0':'1';renderIconPicker(selIcon);
+    if(emojiEl.dataset.open==='1'){var pn=document.getElementById('cm-emoji-more');if(pn&&pn.scrollIntoView)pn.scrollIntoView({block:'nearest',behavior:'smooth'});}});
+}
 
 /* ── 코스 모달 ── */
 var editingCourseId=null;
@@ -2520,17 +2575,8 @@ function openCourseModal(id,e){
   document.getElementById('cm-delete-btn').style.display=c?'flex':'none';
   document.getElementById('cm-delete-btn').textContent=isCustomSlot?'비우기':'삭제';
   /* 아이콘 */
-  var emojiEl=document.getElementById('cm-emoji');emojiEl.innerHTML='';
-  var selIcon=c?c.icon:ICONS[0];
-  ICONS.forEach(function(em){
-    var btn=document.createElement('div');btn.className='emoji-btn'+(em===selIcon?' sel':'');
-    btn.textContent=em;
-    btn.addEventListener('click',function(){
-      document.querySelectorAll('#cm-emoji .emoji-btn').forEach(function(b){b.classList.remove('sel');});
-      btn.classList.add('sel');
-    });
-    emojiEl.appendChild(btn);
-  });
+  document.getElementById('cm-emoji').dataset.open='0';
+  renderIconPicker(c?c.icon:ICONS[0]);
   /* 단계 체크리스트 */
   var checklist=document.getElementById('cm-steps');checklist.innerHTML='';
   var selectedIds=c?new Set(c.stepIds):new Set();
@@ -2549,7 +2595,7 @@ function openCourseModal(id,e){
 function saveCourse(){
   var name=document.getElementById('cm-name').value.trim();
   if(!name){alert('코스 이름을 입력해주세요.');return;}
-  var selEm=document.querySelector('#cm-emoji .emoji-btn.sel');
+  var selEm=document.querySelector('#cm-emoji .emoji-btn.sel:not(.emoji-more)');
   var icon=selEm?selEm.textContent:ICONS[0];
   var checkedItems=document.querySelectorAll('#cm-steps .step-check-item.checked');
   var stepIds=Array.from(checkedItems).map(function(item){return item.dataset.sid;});
