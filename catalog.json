@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-14",
+  "version": "2026-11-14b",
   "note": "희석비는 각 제품의 공식 판매 페이지·라벨 기준으로 확인한 값만 수록합니다.",
   "items": [
     {
@@ -154,6 +154,308 @@
       ],
       "defaultLevel": 0,
       "note": "처음 사용은 1:200 권장 · 최상 성능은 1:100",
+      "checked": "2026-11"
+    },
+    {
+      "id": "koch-gsf-foam",
+      "brand": "Koch-Chemie",
+      "prod": "Koch-Chemie Gentle Snow Foam (Gsf) — 폼건",
+      "aliases": [
+        "코흐케미",
+        "코흐",
+        "gsf",
+        "젠틀스노우폼",
+        "젠틀 스노우 폼",
+        "koch"
+      ],
+      "name": "스노우폼 (중성)",
+      "vessel": "폼건",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 50
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "1L 폼건 기준 약 20ml · 중성(pH 약 7.5)으로 왁스·코팅에 안전 · 버킷 세차는 1:200",
+      "checked": "2026-11"
+    },
+    {
+      "id": "koch-gsf-bucket",
+      "brand": "Koch-Chemie",
+      "prod": "Koch-Chemie Gentle Snow Foam (Gsf) — 버킷",
+      "aliases": [
+        "코흐케미",
+        "코흐",
+        "gsf",
+        "젠틀스노우폼",
+        "카샴푸",
+        "koch"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 10000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 200
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "10L 버킷 기준 50ml",
+      "checked": "2026-11"
+    },
+    {
+      "id": "koch-greenstar",
+      "brand": "Koch-Chemie",
+      "prod": "Koch-Chemie Green Star (Gs)",
+      "aliases": [
+        "코흐케미",
+        "코흐",
+        "그린스타",
+        "green star",
+        "apc",
+        "다목적세정제",
+        "koch"
+      ],
+      "name": "APC 다목적 세정",
+      "vessel": "압축분무기",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "가벼운 오염",
+          "ratio": 30
+        },
+        {
+          "label": "보통 오염",
+          "ratio": 10
+        },
+        {
+          "label": "심한 오염",
+          "ratio": 5
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "강알칼리 · 실내는 1:10~1:20 · 코팅면·가죽·알루미늄은 시험 후 사용",
+      "checked": "2026-11"
+    },
+    {
+      "id": "gyeon-bathe",
+      "brand": "GYEON",
+      "prod": "GYEON Q²M Bathe",
+      "aliases": [
+        "기온",
+        "지온",
+        "배스",
+        "bathe",
+        "q2m",
+        "카샴푸"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 10000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 500
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "버킷 1개당 15~20ml · 코팅 차량용 중성 샴푸",
+      "checked": "2026-11"
+    },
+    {
+      "id": "gyeon-bathe-essence",
+      "brand": "GYEON",
+      "prod": "GYEON Q²M Bathe Essence",
+      "aliases": [
+        "기온",
+        "지온",
+        "배스 에센스",
+        "bathe essence",
+        "q2m",
+        "카샴푸"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 10000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 2000
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "고농축 · 10~15L 버킷에 5~10ml",
+      "checked": "2026-11"
+    },
+    {
+      "id": "gyeon-foam",
+      "brand": "GYEON",
+      "prod": "GYEON Q²M Foam",
+      "aliases": [
+        "기온",
+        "지온",
+        "폼",
+        "foam",
+        "q2m",
+        "스노우폼"
+      ],
+      "name": "스노우폼 프리워시",
+      "vessel": "폼건",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "가벼운 오염",
+          "ratio": 15
+        },
+        {
+          "label": "보통 오염",
+          "ratio": 10
+        },
+        {
+          "label": "심한 오염",
+          "ratio": 5
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "제조사 기본 1:15 · 심한 오염·코팅 없는 차량은 1:5까지",
+      "checked": "2026-11"
+    },
+    {
+      "id": "carpro-reset",
+      "brand": "CARPRO",
+      "prod": "CARPRO Reset",
+      "aliases": [
+        "카프로",
+        "리셋",
+        "reset",
+        "카샴푸"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 10000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 500
+        },
+        {
+          "label": "진하게",
+          "ratio": 400
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "코팅 차량용 중성 샴푸 · 폼건 사용 시 1:9",
+      "checked": "2026-11"
+    },
+    {
+      "id": "carpro-lift",
+      "brand": "CARPRO",
+      "prod": "CARPRO Lift",
+      "aliases": [
+        "카프로",
+        "리프트",
+        "lift",
+        "스노우폼"
+      ],
+      "name": "스노우폼 프리워시",
+      "vessel": "폼건",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 10
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "알칼리 프리워시 · 1:10에서는 일반 왁스·실런트가 벗겨질 수 있음 · 묽게 조절 가능",
+      "checked": "2026-11"
+    },
+    {
+      "id": "sonax-actifoam-energy",
+      "brand": "SONAX",
+      "prod": "SONAX PROFILINE ActiFoam Energy",
+      "aliases": [
+        "소낙스",
+        "액티폼",
+        "액티폼 에너지",
+        "actifoam",
+        "스노우폼"
+      ],
+      "name": "스노우폼 프리워시",
+      "vessel": "폼건",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 30
+        },
+        {
+          "label": "진하게",
+          "ratio": 10
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "중성 · 샴푸·벌레·휠 세정 겸용",
+      "checked": "2026-11"
+    },
+    {
+      "id": "bilthamber-autowash",
+      "brand": "Bilt Hamber",
+      "prod": "Bilt Hamber Auto-Wash",
+      "aliases": [
+        "빌트햄버",
+        "빌트 햄버",
+        "오토워시",
+        "auto wash",
+        "카샴푸"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 10000,
+      "levels": [
+        {
+          "label": "기본",
+          "ratio": 2000
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "10L 버킷에 5ml (티스푼 1개)",
+      "checked": "2026-11"
+    },
+    {
+      "id": "bilthamber-surfex-hd",
+      "brand": "Bilt Hamber",
+      "prod": "Bilt Hamber Surfex HD",
+      "aliases": [
+        "빌트햄버",
+        "빌트 햄버",
+        "서펙스",
+        "surfex",
+        "apc",
+        "다목적세정제"
+      ],
+      "name": "APC 다목적 세정",
+      "vessel": "압축분무기",
+      "defaultVol": 1000,
+      "levels": [
+        {
+          "label": "가벼운 오염",
+          "ratio": 30
+        },
+        {
+          "label": "보통 오염",
+          "ratio": 10
+        },
+        {
+          "label": "심한 오염",
+          "ratio": 5
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "엔진룸·휠하우스 1:5~1:10 · 실내·플라스틱 1:15~1:30",
       "checked": "2026-11"
     }
   ]
