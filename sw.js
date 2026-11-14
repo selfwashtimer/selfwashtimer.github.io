@@ -1,6 +1,6 @@
 /* 디테일링 셀프세차 타이머 — 오프라인 캐시
    앱을 고칠 때마다 CACHE 버전 숫자를 올려야 사용자 기기에 새 버전이 반영됩니다. */
-var CACHE = 'dst-v2';
+var CACHE = 'dst-v3';
 var CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -24,6 +24,12 @@ self.addEventListener('fetch', function (e) {
       var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
       return res;
     }).catch(function () { return caches.match('./index.html'); }));
+    return;
+  }
+
+  /* 버전 정보: 항상 네트워크에서 확인 (캐시 저장 안 함) */
+  if (url.origin === self.location.origin && /version\.json$/.test(url.pathname)) {
+    e.respondWith(fetch(req, { cache: 'no-store' }).catch(function () { return new Response('{}', { headers: { 'Content-Type': 'application/json' } }); }));
     return;
   }
 
