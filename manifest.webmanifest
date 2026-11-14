@@ -8,7 +8,7 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#f5f5f3",
   "theme_color": "#0b6fb8",
   "categories": ["auto", "lifestyle", "utilities"],

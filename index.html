@@ -609,6 +609,20 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 
 svg{display:block;}
 .ci-flow,.edit-card-flow{font-size:11.5px;color:var(--tx2);line-height:1.55;margin-top:3px;word-break:keep-all;overflow-wrap:anywhere;}
+/* 약제 카탈로그 */
+.pm-prod-wrap{position:relative;}
+.pm-cat-hint{font-size:10px;color:var(--blue);font-weight:500;margin-left:4px;letter-spacing:0;text-transform:none;}
+.pm-cat-list{display:none;margin-top:4px;border:1.5px solid var(--blue);border-radius:10px;background:var(--s1);max-height:230px;overflow-y:auto;box-shadow:0 6px 18px rgba(0,0,0,.12);}
+.pm-cat-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--b1);}
+.pm-cat-item:last-child{border-bottom:none;}
+.pm-cat-item:active,.pm-cat-item:hover{background:var(--blue2);}
+.pm-cat-prod{font-size:13px;font-weight:700;color:var(--tx);}
+.pm-cat-sub{font-size:11px;color:var(--tx3);font-family:var(--mono);margin-top:1px;}
+.pm-cat-empty{padding:10px 12px;font-size:12px;color:var(--tx2);line-height:1.5;}
+.pm-cat-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.pm-cat-btn{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px;border-radius:14px;border:1px solid var(--blue);background:var(--blue2);color:var(--blue);font-size:11.5px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+.pm-cat-btn.ghost{display:none;border-color:var(--b3);background:var(--s2);color:var(--tx2);}
+.pm-cat-note{display:none;margin-top:6px;padding:8px 10px;border-radius:8px;background:var(--acc2);color:var(--acc);font-size:11.5px;line-height:1.55;font-weight:600;}
 /* 드래그 정렬 */
 .drag-h{flex-shrink:0;width:30px;height:38px;margin:-6px 0 -6px -8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--tx3);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:6px;}
 .drag-h:active{cursor:grabbing;background:var(--s2);}
@@ -1095,7 +1109,12 @@ svg{display:block;}
   <div class="modal-box">
     <div class="modal-title" id="product-modal-title">약제 편집</div>
     <div class="field-group"><div class="field-label">약제 이름</div><input type="text" id="pm-name" placeholder="예: 알칼리 프리워시"></div>
-    <div class="field-group"><div class="field-label">제품명</div><input type="text" id="pm-prod" placeholder="예: Labocosmetica Primus 2.0"></div>
+    <div class="field-group pm-prod-wrap"><div class="field-label">제품명 <span class="pm-cat-hint">입력하면 등록된 제품을 찾아 기본값을 채워요</span></div>
+      <input type="text" id="pm-prod" placeholder="예: Labocosmetica Primus 2.0" autocomplete="off">
+      <div class="pm-cat-list" id="pm-cat-list"></div>
+      <div class="pm-cat-tools"><button type="button" class="pm-cat-btn" onclick="catWebSearch()">🔎 웹에서 희석비 찾기</button><button type="button" class="pm-cat-btn ghost" id="pm-cat-req" onclick="catRequest()">📮 이 제품 등록 요청</button></div>
+      <div class="pm-cat-note" id="pm-cat-note"></div>
+    </div>
     <div class="field-row">
       <div class="field-group"><div class="field-label">용기 유형</div><input type="text" id="pm-vessel" placeholder="예: 압축분무기"></div>
       <div class="field-group"><div class="field-label">기본 용량 (ml)</div><input type="number" id="pm-vol" min="50" max="50000" placeholder="2000"></div>
@@ -2404,6 +2423,82 @@ function renderProductsList(){
 
 /* ── 약제 모달 ── */
 var editingProductId=null;
+/* ══ 약제 카탈로그 (검증된 제품 기본값) ══
+   - 앱 내장본 + 사이트의 catalog.json(있으면 덮어씀). 검색은 기기 안에서만 이루어짐 */
+var CATALOG=[],catPending=null;
+function catFromDefaults(){
+  var brands={wheel:'더클래스',touchless:'더클래스',alkali:'Labocosmetica',acid:'Labocosmetica',mitwash:'Labocosmetica'};
+  return DEFAULT_PRODUCTS.map(function(p){return {id:'builtin-'+p.id,brand:brands[p.id]||'',prod:p.prod,aliases:[],name:p.name,vessel:p.vessel,defaultVol:p.defaultVol,
+    levels:p.levels.map(function(l){return {label:String(l.label).replace(/\s*\(1:\s*\d+\)\s*$/,''),ratio:l.ratio};}),defaultLevel:p.defaultLevel,note:p.note||'',checked:'2026-11'};});
+}
+function catNorm(t){return String(t||'').toLowerCase().replace(/[\s\-_.·()]/g,'');}
+function catLoad(){
+  CATALOG=catFromDefaults();
+  if(!/^https?:/.test(location.protocol))return;
+  fetch('catalog.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!Array.isArray(d.items))return;
+    var items=cleanDeep(d.items).filter(function(x){return x&&x.prod&&Array.isArray(x.levels)&&x.levels.length;});
+    if(items.length)CATALOG=items;
+  }).catch(function(){});
+}
+function catSearch(q){
+  var n=catNorm(q);if(!n)return CATALOG.slice(0,8);
+  var words=String(q).trim().split(/\s+/).map(catNorm).filter(Boolean);
+  return CATALOG.filter(function(it){
+    var hay=[it.prod,it.brand,it.name].concat(it.aliases||[]).map(catNorm).join('|');
+    return hay.indexOf(n)>=0||words.every(function(w){return hay.indexOf(w)>=0;});
+  }).slice(0,8);
+}
+function catRender(){
+  var inp=document.getElementById('pm-prod'),box=document.getElementById('pm-cat-list');if(!inp||!box)return;
+  var q=inp.value.trim(),res=catSearch(q);
+  box.innerHTML='';
+  if(document.activeElement!==inp){box.style.display='none';}
+  else{
+    box.style.display='block';
+    if(!res.length){box.innerHTML='<div class="pm-cat-empty">등록된 제품이 없어요. 아래 \'웹에서 희석비 찾기\'로 확인해 직접 입력하거나 등록을 요청해 주세요.</div>';}
+    res.forEach(function(it){
+      var row=document.createElement('div');row.className='pm-cat-item';
+      row.innerHTML='<div class="pm-cat-prod">'+esc(it.prod)+'</div><div class="pm-cat-sub">'+esc((it.brand?it.brand+' · ':'')+it.name+' · '+it.levels.map(function(l){return '1:'+l.ratio;}).join(' / '))+'</div>';
+      row.addEventListener('mousedown',function(e){e.preventDefault();});
+      row.addEventListener('click',function(){catApply(it);});
+      box.appendChild(row);
+    });
+  }
+  document.getElementById('pm-cat-req').style.display=(q&&!res.length)?'inline-flex':'none';
+}
+function catApply(it){
+  var nm=document.getElementById('pm-name');if(!nm.value.trim())nm.value=it.name||'';
+  document.getElementById('pm-prod').value=it.prod;
+  document.getElementById('pm-vessel').value=it.vessel||'';
+  document.getElementById('pm-vol').value=it.defaultVol||'';
+  var lv=document.getElementById('pm-levels');lv.innerHTML='';
+  (it.levels||[]).slice(0,3).forEach(function(l){addLevelRow({label:l.label,ratio:l.ratio});});
+  if(!lv.children.length)addLevelRow({label:'기본',ratio:''});
+  updateLevelAddBtn();
+  catPending={note:it.note||'',defaultLevel:typeof it.defaultLevel==='number'?it.defaultLevel:null};
+  var note=document.getElementById('pm-cat-note');
+  note.innerHTML='✅ 등록된 값'+(it.checked?'('+esc(it.checked)+' 확인)':'')+'으로 채웠어요. 사용하는 제품 라벨과 다르면 고쳐 주세요.'+(it.note?'<br>💡 '+esc(it.note):'');
+  note.style.display='block';
+  document.getElementById('pm-prod').blur();document.getElementById('pm-cat-list').style.display='none';
+}
+function catWebSearch(){
+  var q=(document.getElementById('pm-prod').value||document.getElementById('pm-name').value||'').trim();
+  if(!q){alert('제품명을 먼저 입력해 주세요.');document.getElementById('pm-prod').focus();return;}
+  openExt('https://search.naver.com/search.naver?query='+encodeURIComponent(q+' 희석비'));
+}
+function catRequest(){
+  var q=(document.getElementById('pm-prod').value||'').trim();
+  var sub='[제품 등록 요청] '+q;
+  var body='제품명: '+q+'\n희석비(알고 있다면): \n판매 페이지 주소(있다면): \n';
+  openExt('mailto:selfwashtimer.help@gmail.com?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body));
+}
+function catBind(){
+  var inp=document.getElementById('pm-prod');if(!inp||inp.dataset.cat)return;inp.dataset.cat='1';
+  inp.addEventListener('input',function(){document.getElementById('pm-cat-note').style.display='none';catPending=null;catRender();});
+  inp.addEventListener('focus',catRender);
+  inp.addEventListener('blur',function(){setTimeout(catRender,120);});
+}
 function openProductModal(id,e){
   if(e)e.stopPropagation();
   editingProductId=id;
@@ -2419,6 +2514,9 @@ function openProductModal(id,e){
   (p?p.levels:[]).forEach(function(lv){addLevelRow(lv);});
   if(!levelsEl.children.length)addLevelRow({label:'기본',ratio:''});
   updateLevelAddBtn();
+  catBind();catPending=null;
+  var cn=document.getElementById('pm-cat-note');cn.style.display='none';cn.innerHTML='';
+  document.getElementById('pm-cat-list').style.display='none';document.getElementById('pm-cat-req').style.display='none';
   openModal('product-modal');
 }
 function addLevelRow(lv){
@@ -2462,6 +2560,7 @@ function saveProduct(){
   };
   var old=editingProductId?products.find(function(x){return x.id===editingProductId;}):null;
   if(old&&old.note) prod.note=old.note;
+  if(catPending){if(catPending.note)prod.note=catPending.note;if(catPending.defaultLevel!==null&&levels[catPending.defaultLevel])prod.defaultLevel=catPending.defaultLevel;catPending=null;}
   if(editingProductId){
     var idx=products.findIndex(function(x){return x.id===editingProductId;});
     if(idx>=0)products[idx]=prod;
@@ -3006,6 +3105,7 @@ function renderShopPanel(){
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 }
+try{catLoad();}catch(e){}
 </script>
 </body>
 </html>

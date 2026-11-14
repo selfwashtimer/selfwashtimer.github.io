@@ -1,0 +1,160 @@
+{
+  "version": "2026-11-14",
+  "note": "희석비는 각 제품의 공식 판매 페이지·라벨 기준으로 확인한 값만 수록합니다.",
+  "items": [
+    {
+      "id": "theclass-wheel-xs",
+      "brand": "더클래스",
+      "prod": "더클래스 다이나믹 휠클리너 익스트렉트 S",
+      "aliases": [
+        "the class",
+        "theclass",
+        "dynamic wheel cleaner",
+        "다이나믹 휠클리너",
+        "휠클리너"
+      ],
+      "name": "휠·타이어 세척",
+      "vessel": "폼 압축분무기",
+      "defaultVol": 240,
+      "levels": [
+        {
+          "label": "약한 오염",
+          "ratio": 10
+        },
+        {
+          "label": "보통 오염",
+          "ratio": 5
+        },
+        {
+          "label": "심한 오염",
+          "ratio": 3
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "물 200ml 기준 원액 20 / 40 / 67ml",
+      "checked": "2026-11"
+    },
+    {
+      "id": "labo-primus-2",
+      "brand": "Labocosmetica",
+      "prod": "Labocosmetica Primus 2.0",
+      "aliases": [
+        "라보코스메티카",
+        "라보",
+        "프리무스",
+        "primus"
+      ],
+      "name": "알칼리 프리워시",
+      "vessel": "압축분무기",
+      "defaultVol": 2000,
+      "levels": [
+        {
+          "label": "약한 오염",
+          "ratio": 100
+        },
+        {
+          "label": "중간 오염",
+          "ratio": 80
+        },
+        {
+          "label": "강한 오염",
+          "ratio": 50
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "약한: 세차 2주 이내 · 중간: 4주 이내 · 강한: 2달 이상",
+      "checked": "2026-11"
+    },
+    {
+      "id": "labo-purifica",
+      "brand": "Labocosmetica",
+      "prod": "Labocosmetica Purifica",
+      "aliases": [
+        "라보코스메티카",
+        "라보",
+        "퓨리피카",
+        "purifica"
+      ],
+      "name": "산성 프리워시",
+      "vessel": "압축분무기",
+      "defaultVol": 2000,
+      "levels": [
+        {
+          "label": "약한 오염",
+          "ratio": 200
+        },
+        {
+          "label": "중간 오염",
+          "ratio": 150
+        },
+        {
+          "label": "강한 오염",
+          "ratio": 100
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "분무기 권장 범위 1:100 ~ 1:200",
+      "checked": "2026-11"
+    },
+    {
+      "id": "labo-semper",
+      "brand": "Labocosmetica",
+      "prod": "Labocosmetica Semper",
+      "aliases": [
+        "라보코스메티카",
+        "라보",
+        "셈퍼",
+        "semper",
+        "카샴푸"
+      ],
+      "name": "카샴푸 미트세차",
+      "vessel": "버킷",
+      "defaultVol": 18000,
+      "levels": [
+        {
+          "label": "약한 오염",
+          "ratio": 1200
+        },
+        {
+          "label": "중간 오염",
+          "ratio": 1000
+        },
+        {
+          "label": "강한 오염",
+          "ratio": 800
+        }
+      ],
+      "defaultLevel": 1,
+      "note": "",
+      "checked": "2026-11"
+    },
+    {
+      "id": "theclass-wateraging-xs",
+      "brand": "더클래스",
+      "prod": "더클래스 워터에이징 익스트렉트 S",
+      "aliases": [
+        "the class",
+        "theclass",
+        "water aging",
+        "워터에이징",
+        "발수코팅"
+      ],
+      "name": "습식 발수코팅",
+      "vessel": "압축분무기",
+      "defaultVol": 2000,
+      "levels": [
+        {
+          "label": "일반",
+          "ratio": 200
+        },
+        {
+          "label": "퍼포먼스",
+          "ratio": 100
+        }
+      ],
+      "defaultLevel": 0,
+      "note": "처음 사용은 1:200 권장 · 최상 성능은 1:100",
+      "checked": "2026-11"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 /* 디테일링 셀프세차 타이머 — 오프라인 캐시
    앱을 고칠 때마다 CACHE 버전 숫자를 올려야 사용자 기기에 새 버전이 반영됩니다. */
-var CACHE = 'dst-v1';
+var CACHE = 'dst-v2';
 var CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -24,6 +24,15 @@ self.addEventListener('fetch', function (e) {
       var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
       return res;
     }).catch(function () { return caches.match('./index.html'); }));
+    return;
+  }
+
+  /* 제품 카탈로그: 네트워크 우선(최신 목록) → 실패 시 캐시 */
+  if (url.origin === self.location.origin && /catalog\.json$/.test(url.pathname)) {
+    e.respondWith(fetch(req).then(function (res) {
+      if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
+      return res;
+    }).catch(function () { return caches.match(req); }));
     return;
   }
 
