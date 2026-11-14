@@ -598,6 +598,34 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .home-cancel{width:100%;height:44px;border-radius:12px;border:none;background:var(--s2);font-family:var(--sans);font-size:14px;color:var(--tx2);cursor:pointer;margin-top:4px;}
 
 svg{display:block;}
+/* 예약 시간 강조 */
+.book-sec{border-radius:var(--rl);padding:12px;margin-left:-12px;margin-right:-12px;border:1.5px solid transparent;transition:background .2s,border-color .2s;}
+.book-sec.unset{background:#fff4e5;border:1.5px dashed #e0861a;}
+.book-sec.auto{background:var(--blue2);border-color:rgba(0,112,192,.35);}
+.book-hint{font-size:12px;color:var(--tx2);margin:-2px 0 10px;line-height:1.5;}
+.book-sec.unset .book-hint{color:var(--ora);font-weight:600;}
+.bk-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:6px;background:var(--blue);color:#fff;vertical-align:1px;}
+.bk-tag.me{background:var(--acc);}
+.bk-opt{font-size:9.5px;font-weight:600;color:var(--tx3);border:1px solid var(--b2);border-radius:4px;padding:0 4px;margin-left:4px;letter-spacing:0;}
+.bk-rec-btn{font-size:12px;}
+.cta-book{background:var(--ora2);color:var(--ora);border:1px solid var(--ora);border-radius:12px;font-size:11.5px;font-weight:700;padding:2px 9px;cursor:pointer;font-family:var(--sans);}
+.dil-vol-input.is-def{color:var(--tx2);}
+/* LANDSCAPE-COMPACT: 휴대폰 가로 화면(높이가 낮을 때) 공간 확보 */
+@media (orientation:landscape) and (max-height:520px){
+  .rt{flex-direction:row;padding:5px 4px;gap:5px;}
+  .rt-icon{font-size:16px;}
+  .rt-dot{display:none!important;}
+  .root-panel{padding-bottom:36px;}
+  .setup-hd{padding:6px 16px 4px;}
+  .setup-hd img{width:30px!important;height:30px!important;}
+  .setup-cta{bottom:36px;flex-direction:row;justify-content:center;padding:4px 16px 6px;gap:14px;}
+  .btn-go{height:38px;max-width:260px;font-size:14px;}
+  .ah{padding:4px 16px 4px;}
+  .ah-row2{margin-top:3px;}
+  .ah-stat{padding:2px;}
+  .app-tab{height:30px;}
+  .pb{padding:3px 16px 4px;}
+}
 </style>
 </head>
 <body>
@@ -661,8 +689,9 @@ svg{display:block;}
       </div>
 
       <!-- 1. 예약 시간 -->
-      <div class="home-sec">
-        <div class="lbl">예약 시간</div>
+      <div class="home-sec book-sec" id="book-sec">
+        <div class="lbl">예약 시간 <span class="bk-opt">선택</span></div>
+        <div class="book-hint" id="book-hint"></div>
         <div id="book-row" style="display:flex;align-items:flex-start;gap:10px;">
           <div style="flex-shrink:0;min-width:72px;">
             <div class="bs-val-lbl">설정된 예약 시간</div>
@@ -676,6 +705,7 @@ svg{display:block;}
               <button onclick="adjBook(30)" style="flex:1;height:100%;background:none;border:none;font-size:16px;font-weight:700;color:var(--tx2);cursor:pointer;">＋</button>
             </div>
             <button class="bs-adj-btn" style="width:100%;" onclick="resetBook()">초기화</button>
+            <button class="bs-adj-btn bk-rec-btn" style="width:100%;" onclick="recBook()">코스 추천값</button>
           </div>
         </div>
       </div>
@@ -1213,7 +1243,14 @@ function switchRoot(tab){
 }
 
 /* ══ SETUP ══ */
-var selCourse=null, bookMin=0;
+var selCourse=null, bookMin=0, bookManual=false, bookAuto=false;
+/* 코스 예상 시간 + 여유 15분을 30분 단위로 올림 */
+function recBookMin(c){var est=c?getCourseEst(c):0;if(!est)return 0;return Math.max(60,Math.ceil((est+15)/30)*30);}
+function applyBookRec(){
+  if(bookManual||!selCourse)return;
+  var c=courses.find(function(x){return x.id===selCourse;});
+  var r=recBookMin(c);if(r){bookMin=r;bookAuto=true;}
+}
 
 function renderSetup(){
   /* 코스 그리드 */
@@ -1226,6 +1263,7 @@ function renderSetup(){
     });
     g.appendChild(card);
   });
+  applyBookRec();
   renderBook();
   renderDilGrid('dil-setup-grid',true);
   updatePreview();
@@ -1294,7 +1332,7 @@ function renderBook(){
     var btn=document.createElement('button');
     btn.className='bs-chip'+(bookMin===h*60?' sel':'');
     btn.textContent=h+'H';
-    btn.addEventListener('click',function(){bookMin=h*60;renderBook();updatePreview();renderCourseDetailInline();});
+    btn.addEventListener('click',function(){bookMin=h*60;bookManual=true;bookAuto=false;renderBook();updatePreview();renderCourseDetailInline();});
     chips.appendChild(btn);
   });
   var bsValEl=document.getElementById('bs-val');
@@ -1302,10 +1340,21 @@ function renderBook(){
     if(bookMin>0){bsValEl.textContent=toHM(bookMin);bsValEl.className='bs-val-big';}
     else{bsValEl.textContent='미설정';bsValEl.className='bs-val-unset';}
   }
+  var sec=document.getElementById('book-sec');
+  if(sec){sec.classList.toggle('unset',!(bookMin>0));sec.classList.toggle('auto',bookMin>0&&bookAuto);}
+  var hint=document.getElementById('book-hint');
+  if(hint){
+    var c=selCourse&&courses.find(function(x){return x.id===selCourse;});
+    if(bookMin>0&&bookAuto&&c) hint.innerHTML='<span class="bk-tag">코스 추천</span>'+esc(c.name)+' 예상 '+toHM(getCourseEst(c))+' + 여유 15분 기준. 실제 예약 시간으로 바꿔 주세요.';
+    else if(bookMin>0) hint.innerHTML='<span class="bk-tag me">직접 설정</span>코스를 바꿔도 이 값이 유지됩니다.';
+    else hint.innerHTML='📅 세차장을 예약했다면 시간을 넣어 주세요. 남은 시간과 여유를 알려 드려요.';
+  }
 }
 
-function adjBook(delta){bookMin=Math.max(0,bookMin+delta);renderBook();updatePreview();renderCourseDetailInline();}
-function resetBook(){bookMin=0;renderBook();updatePreview();renderCourseDetailInline();}
+function adjBook(delta){bookMin=Math.max(0,bookMin+delta);bookManual=true;bookAuto=false;renderBook();updatePreview();renderCourseDetailInline();}
+function resetBook(){bookMin=0;bookManual=true;bookAuto=false;renderBook();updatePreview();renderCourseDetailInline();}
+function recBook(){bookManual=false;applyBookRec();renderBook();updatePreview();renderCourseDetailInline();}
+function goBook(){var el=document.getElementById('book-sec');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 
 function updatePreview(){
   var activeStepsArr=getActiveSteps();
@@ -1316,7 +1365,7 @@ function updatePreview(){
     var diff=bookMin-tot;
     html+='예약 '+toHM(bookMin)+'　예상 <span class="'+(diff>=0?'ok':'warn')+'">'+toHM(tot)+'</span>　여유 <span class="'+(diff>=0?'ok':'warn')+'">'+(diff>=0?'+':'-')+toHM(Math.abs(diff))+'</span>';
   } else {
-    html+='예상 <span class="neu">'+toHM(tot)+'</span>';
+    html+='예상 <span class="neu">'+toHM(tot)+'</span>　<button type="button" class="cta-book" onclick="goBook()">＋ 예약 시간 입력</button>';
   }
   info.innerHTML=html;
 
@@ -1415,8 +1464,12 @@ function buildDilCard(p,container,refreshFn){
   var cWrap=document.createElement('label');cWrap.className='dil-vol-wrap dil-edit'+(st.ratioCustom?' custom':'');
   cWrap.innerHTML='<span class="dil-vol-unit">1 :</span>';
   var cInp=document.createElement('input');cInp.type='number';cInp.inputMode='numeric';cInp.className='dil-vol-input';
-  cInp.placeholder='입력';cInp.value=st.ratioCustom?st.s.customRatio:'';cInp.min=1;cInp.max=9999;
-  var cT=null;cInp.addEventListener('input',function(){clearTimeout(cT);var inp=this;cT=setTimeout(function(){var v=parseInt(inp.value);getDilSettings(p.id).customRatio=isNaN(v)||v<1?null:v;saveDilSettings();refreshFn();},700);});
+  cInp.placeholder=String(st.ratio);cInp.value=st.ratio;cInp.min=1;cInp.max=9999;
+  if(!st.ratioCustom)cInp.classList.add('is-def');
+  var lvRatio=(p.levels&&p.levels[st.lvIdx])?p.levels[st.lvIdx].ratio:null;
+  cInp.addEventListener('focus',function(){var inp=this;setTimeout(function(){try{inp.select();}catch(e){}},0);});
+  var cT=null;cInp.addEventListener('input',function(){clearTimeout(cT);var inp=this;cT=setTimeout(function(){var v=parseInt(inp.value);if(isNaN(v)||v<1)return;getDilSettings(p.id).customRatio=(v===lvRatio?null:v);saveDilSettings();refreshFn();},700);});
+  cInp.addEventListener('blur',function(){if(this.value===''||parseInt(this.value)<1){this.value=st.ratio;}});
   cWrap.appendChild(cInp);cWrap.insertAdjacentHTML('beforeend','<span class="dil-pen">✎</span>');
   cDiv.appendChild(cWrap);ctrl.appendChild(cDiv);
 
@@ -1674,7 +1727,7 @@ function resumeSession(){
   if(sessStart&&!suspended&&activeSteps.length){setRootUI('timer');showApp(true);scrollToCur();updateTimerTabBadge();return;}
   var s=loadSession();
   if(!s)return;
-  selCourse=s.selCourse;bookMin=s.bookMin||0;
+  selCourse=s.selCourse;bookMin=s.bookMin||0;bookManual=true;bookAuto=false;
   activeSteps=getActiveSteps();
   cur=s.cur||0;results=s.results||{};
   sessStart=new Date(s.sessStart);
