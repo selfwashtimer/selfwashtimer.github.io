@@ -61,9 +61,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
   box-shadow:0 -2px 12px rgba(0,0,0,.08);
   padding-bottom:env(safe-area-inset-bottom);
 }
-.rt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;cursor:pointer;gap:3px;transition:color .15s;}
+.rt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;cursor:pointer;gap:3px;transition:color .15s;}
 .rt-icon{font-size:20px;line-height:1;}
-.rt-lbl{font-size:10px;font-weight:500;color:var(--tx3);white-space:nowrap;letter-spacing:-.02em;}
+.rt-lbl{font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:var(--tx3);white-space:nowrap;letter-spacing:-.02em;}
 /* 세차장&용품샵 탭 */
 #shop-panel{background:var(--bg);}
 .sh-scroll{flex:1;overflow-y:auto;padding:12px 14px 24px;display:flex;flex-direction:column;gap:16px;}
@@ -117,7 +117,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .root-panel.on{display:flex;}
 
 /* ════ 공통 헤더 ════ */
-.ph{background:var(--s1);border-bottom:1px solid var(--b2);padding:14px 16px 10px;flex-shrink:0;box-shadow:var(--shadow);}
+.ph{position:relative;background:var(--s1);border-bottom:1px solid var(--b2);padding:14px 16px 10px;flex-shrink:0;box-shadow:var(--shadow);}
 .ph h2{font-size:17px;font-weight:700;letter-spacing:-.01em;}
 .ph p{font-size:12px;color:var(--tx3);font-family:var(--mono);margin-top:2px;}
 
@@ -179,6 +179,54 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .ci-card.open .ci-body{display:flex;}
 .ci-card.open .cd-chev.ci-chev{transform:rotate(180deg);}
 .ci-note{font-size:11px;color:var(--ora);font-family:var(--mono);text-align:center;}
+/* 코스정보 메뉴판·비교 */
+.ci-menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:6px;flex-shrink:0;}
+@media (min-width:700px){.ci-menu{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}}
+.ci-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:8px 9px;background:var(--s1);border:1.5px solid var(--b2);border-radius:12px;font-family:inherit;text-align:left;cursor:pointer;box-shadow:var(--shadow);color:var(--tx);}
+.ci-tile-icon{font-size:18px;line-height:1.1;}
+.ci-tile-name{font-size:12.5px;font-weight:700;line-height:1.3;word-break:keep-all;}
+.ci-tile-sub{font-size:10px;color:var(--tx3);font-family:var(--mono);}
+.ci-tile-badge{position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;color:var(--acc);background:var(--acc2);border-radius:4px;padding:1px 5px;}
+.ci-tile.on{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 2px 8px rgba(58,125,0,.3);}
+.ci-tile.on .ci-tile-sub{color:rgba(255,255,255,.85);}
+.ci-tile.on .ci-tile-badge{background:#fff;}
+.ci-tile.pick-a{border-color:var(--acc);background:var(--acc3);}
+.ci-tile.pick-b{border-color:var(--blue);background:var(--blue2);}
+.ci-tile-ab{position:absolute;bottom:6px;right:6px;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.pick-a .ci-tile-sub,.pick-b .ci-tile-sub{padding-right:20px;}
+.pick-a .ci-tile-ab{background:var(--acc);}.pick-b .ci-tile-ab{background:var(--blue);}
+.ci-tile-cmp{border-style:dashed;border-color:var(--blue);}
+.ci-tile-cmp .ci-tile-name{color:var(--blue);}
+.ci-tile-cmp.on{background:var(--blue);border-color:var(--blue);border-style:solid;}
+.ci-tile-cmp.on .ci-tile-name{color:#fff;}
+.ci-tile:disabled{opacity:.45;cursor:default;}
+.ci-area{display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+.cmp-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cmp-sel{display:flex;align-items:center;gap:6px;background:var(--s1);border:1.5px solid var(--b2);border-radius:10px;padding:6px 8px;}
+.cmp-sel select{flex:1;min-width:0;border:none;background:transparent;font-size:13px;font-weight:700;font-family:inherit;color:var(--tx);}
+.cmp-tag{flex-shrink:0;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.cmp-a .cmp-tag,.cmp-sel.cmp-a .cmp-tag{background:var(--acc);}
+.cmp-b .cmp-tag,.cmp-sel.cmp-b .cmp-tag{background:var(--blue);}
+.cmp-sel.cmp-a{border-color:rgba(58,125,0,.45);}.cmp-sel.cmp-b{border-color:rgba(0,112,192,.45);}
+.cmp-hint{font-size:11px;color:var(--tx3);text-align:center;margin-top:-4px;}
+.cmp-table,.cmp-steps{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow);}
+.cmp-row,.cmp-srow{display:grid;grid-template-columns:76px 1fr 1fr;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--b1);font-size:12px;}
+.cmp-srow{grid-template-columns:1.3fr 1fr 1fr;}
+.cmp-row:last-child,.cmp-srow:last-child{border-bottom:none;}
+.cmp-hd{background:var(--s2);font-size:12px;font-weight:700;}
+.cmp-hd .cmp-a{color:var(--acc);}.cmp-hd .cmp-b{color:var(--blue);}
+.cmp-k{font-size:11px;color:var(--tx3);font-family:var(--mono);}
+.cmp-d{font-size:10px;color:var(--ora);font-family:var(--mono);}
+.cmp-eq{font-size:10px;color:var(--tx3);font-family:var(--mono);}
+.cmp-rec{font-size:11px;color:var(--tx2);line-height:1.4;}
+.cmp-row .ok{color:var(--grn);font-weight:700;}.cmp-row .warn{color:var(--red);font-weight:700;}
+.cmp-steps-t{padding:10px 12px;font-size:13px;font-weight:700;border-bottom:1px solid var(--b1);}
+.cmp-steps-t span{font-size:11px;font-weight:500;color:var(--tx3);margin-left:6px;font-family:var(--mono);}
+.cmp-sname{font-weight:600;}
+.cmp-srow .cd-dil{font-size:10px;padding:0 4px;}
+.cmp-none{color:var(--tx3);}
+.cmp-srow.only-a{background:rgba(58,125,0,.06);}
+.cmp-srow.only-b{background:rgba(0,112,192,.06);}
 /* 코스 상세 */
 .cd-sum{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:9px;overflow:hidden;}
 .cd-sum-item{flex:1;padding:7px 0;text-align:center;}
@@ -479,9 +527,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 
 /* ════ CUSTOMIZE PANEL ════ */
 #customize-panel{background:var(--bg);overflow-y:auto;}
-.cust-tabs{display:flex;background:var(--s1);border-bottom:1.5px solid var(--b2);flex-shrink:0;position:sticky;top:0;z-index:10;}
-.cust-tab{flex:1;height:40px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--tx3);cursor:pointer;border-bottom:2.5px solid transparent;}
-.cust-tab.on{color:var(--acc);border-bottom-color:var(--acc);}
+.cust-tabs{display:flex;gap:6px;padding:8px 12px;background:var(--s1);border-bottom:1px solid var(--b2);flex-shrink:0;position:sticky;top:0;z-index:10;}
+.cust-tab{flex:1;height:36px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--tx2);cursor:pointer;background:var(--s3,#f1f1ee);border:1px solid var(--b2);border-radius:18px;transition:background .15s,color .15s;}
+.cust-tab.on{color:#fff;background:var(--acc);border-color:var(--acc);font-weight:700;box-shadow:0 2px 6px rgba(58,125,0,.25);}
 .cust-pane{display:none;padding:14px 14px 80px;flex-direction:column;gap:12px;}
 .cust-pane.on{display:flex;}
 
@@ -666,6 +714,8 @@ svg{display:block;}
 .app-ver-st.ok{color:#2e8b57;}
 .app-upd{padding:2px 8px;border:none;border-radius:10px;background:#e0861a;color:#fff;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;animation:updPulse 2s ease-in-out infinite;white-space:nowrap;}
 .app-upd[hidden]{display:none;}
+.ph-ver{position:absolute;top:14px;right:16px;font-family:var(--mono);}
+.ph h2,.ph p{padding-right:96px;}
 @media (max-width:480px){.upd-v{display:none;}.hd-meta{gap:8px;}.hd-by{padding-left:8px;}}
 .hd-by{font-size:10px;color:var(--tx3);padding-left:10px;border-left:1px solid var(--b2);white-space:nowrap;}
 .hd-by b{color:var(--tx2);letter-spacing:.05em;}
@@ -689,18 +739,18 @@ svg{display:block;}
 <!-- ════ ROOT TAB BAR ════ -->
 <div id="root-tabs">
   <div class="rt on" id="rt-home" onclick="switchRoot('home')">
-    <div class="rt-icon">🏠</div>
+    <div class="rt-icon">🚿</div>
     <div class="rt-lbl">세차설정</div>
     <div class="rt-dot"></div>
   </div>
   <div class="rt" id="rt-timer" onclick="switchRoot('timer')">
     <div class="rt-icon">⏱</div>
-    <div class="rt-lbl">타이머</div>
+    <div class="rt-lbl">세차타이머</div>
     <div class="rt-progress" id="rt-progress" style="display:none;"></div>
   </div>
   <div class="rt" id="rt-courseinfo" onclick="switchRoot('courseinfo')">
     <div class="rt-icon">📋</div>
-    <div class="rt-lbl">코스정보</div>
+    <div class="rt-lbl">세차코스정보</div>
     <div class="rt-dot"></div>
   </div>
   <div class="rt" id="rt-customize" onclick="switchRoot('customize')">
@@ -709,8 +759,8 @@ svg{display:block;}
     <div class="rt-dot"></div>
   </div>
   <div class="rt" id="rt-shop" onclick="switchRoot('shop')">
-    <div class="rt-icon">🧽</div>
-    <div class="rt-lbl">세차장&amp;샵</div>
+    <div class="rt-icon">🏪</div>
+    <div class="rt-lbl">세차장&amp;용품샵</div>
     <div class="rt-dot"></div>
   </div>
 </div>
@@ -729,7 +779,7 @@ svg{display:block;}
           </div>
         </div>
         <div class="hd-meta">
-          <div class="hd-ver"><div id="app-ver" class="app-ver"></div><div id="app-ver-st" class="app-ver-st"></div><button type="button" id="app-upd" class="app-upd" hidden></button></div>
+          <div class="hd-ver"><div class="app-ver"></div><div class="app-ver-st"></div><button type="button" class="app-upd" hidden></button></div>
           <div class="hd-by">made by <b>DAZZ</b></div>
         </div>
       </div>
@@ -812,7 +862,7 @@ svg{display:block;}
       <div class="idle-icon">⏱</div>
       <div class="idle-title">진행 중인 세차가 없어요</div>
       <div class="idle-sub">세차설정 탭에서 코스를 고르고 시작하세요</div>
-      <button class="btn-primary" style="margin-top:4px;" onclick="switchRoot('home')">🏠 세차설정으로 이동</button>
+      <button class="btn-primary" style="margin-top:4px;" onclick="switchRoot('home')">🚿 세차설정으로 이동</button>
     </div>
     <div>
       <div class="lbl">📋 세차 기록</div>
@@ -893,8 +943,9 @@ svg{display:block;}
 <!-- ════ COURSE INFO PANEL ════ -->
 <div class="root-panel" id="courseinfo-panel">
   <div class="ph">
-    <h2>📋 코스 정보</h2>
-    <p>코스를 눌러 단계·희석·포인트를 확인하세요</p>
+    <div class="hd-ver ph-ver"><div class="app-ver"></div><div class="app-ver-st"></div><button type="button" class="app-upd" hidden></button></div>
+    <h2>📋 세차코스 정보</h2>
+    <p>코스를 골라 단계·희석·포인트를 보거나 두 코스를 비교하세요</p>
   </div>
   <div class="ci-scroll" id="ci-list"></div>
 </div>
@@ -902,7 +953,8 @@ svg{display:block;}
 <!-- ════ SHOP PANEL (세차장 & 용품샵) ════ -->
 <div class="root-panel" id="shop-panel">
   <div class="ph">
-    <h2>🧽 세차장 &amp; 용품샵</h2>
+    <div class="hd-ver ph-ver"><div class="app-ver"></div><div class="app-ver-st"></div><button type="button" class="app-upd" hidden></button></div>
+    <h2>🏪 세차장 &amp; 용품샵</h2>
     <p>주변 세차장 찾기 · 자주 가는 매장과 쇼핑몰</p>
   </div>
   <div class="sh-scroll">
@@ -953,6 +1005,7 @@ svg{display:block;}
 <!-- ════ CUSTOMIZE PANEL ════ -->
 <div class="root-panel" id="customize-panel">
   <div class="ph">
+    <div class="hd-ver ph-ver"><div class="app-ver"></div><div class="app-ver-st"></div><button type="button" class="app-upd" hidden></button></div>
     <h2>⚙️ 설정</h2>
     <p>단계·약제·코스를 자유롭게 편집하세요</p>
   </div>
@@ -1038,21 +1091,21 @@ svg{display:block;}
 <div class="modal-bg" id="help-modal" onclick="if(event.target===this)closeModal('help-modal')">
   <div class="modal-box">
     <div class="modal-title">📖 도움말</div>
-    <details class="help-sec" open><summary>🏠 세차설정</summary><div class="help-body"><ul>
+    <details class="help-sec" open><summary>🚿 세차설정</summary><div class="help-body"><ul>
       <li><b>예약 시간</b> — 세차장 베이 이용 시간을 입력하면 남은 시간을 기준으로 진행을 관리해요. 코스를 고르면 30분 단위 추천값이 자동으로 잡히고, <b>코스 추천값</b> 버튼으로 다시 적용할 수 있어요.</li>
       <li><b>희석 비율</b> — 약제별 오염도(약·중·강)를 고르면 용기 용량에 맞는 원액·물 양이 계산돼요. 비율과 총 용량은 직접 입력할 수도 있어요.</li>
       <li><b>코스 선택</b> — 코스를 고르면 아래에 단계 구성이 보여요. <b>세차 시작</b>을 누르면 타이머로 넘어가요.</li>
     </ul></div></details>
-    <details class="help-sec"><summary>⏱ 타이머</summary><div class="help-body"><ul>
+    <details class="help-sec"><summary>⏱ 세차타이머</summary><div class="help-body"><ul>
       <li><b>진행</b> — 현재 단계와 경과 시간, 다음 단계를 보여줘요. 단계를 마치면 다음으로 넘기세요.</li>
       <li><b>희석</b> — 세차 중에도 약제별 희석량을 바로 확인할 수 있어요.</li>
       <li><b>코스</b> — 진행 중인 코스의 전체 단계와 포인트를 볼 수 있어요.</li>
       <li><b>기록</b> — 끝낸 세차의 단계별 소요 시간이 저장돼요.</li>
       <li>앱을 닫았다가 다시 열어도 진행 중인 세차를 이어서 할 수 있어요.</li>
     </ul></div></details>
-    <details class="help-sec"><summary>📋 코스정보</summary><div class="help-body"><ul>
-      <li>코스별 주요 단계 요약과 예상 시간을 한눈에 비교할 수 있어요.</li>
-      <li>코스를 누르면 단계·희석·포인트를 자세히 보고, 바로 그 코스로 선택할 수 있어요.</li>
+    <details class="help-sec"><summary>📋 세차코스정보</summary><div class="help-body"><ul>
+      <li>위쪽 메뉴판에서 코스를 누르면 아래에 단계·희석·포인트가 자세히 나와요. 바로 그 코스로 선택할 수도 있어요.</li>
+      <li><b>⚖️ 코스 비교</b>를 누르면 두 코스의 소요 시간·단계 수·약제를 나란히 보고, 어떤 단계가 다른지 색으로 확인할 수 있어요.</li>
     </ul></div></details>
     <details class="help-sec"><summary>⚙️ 설정</summary><div class="help-body"><ul>
       <li><b>단계 · 약제 · 코스</b> — 나만의 단계와 약제, 코스를 추가·수정할 수 있어요. 왼쪽 손잡이(⠿)를 끌어서 순서를 바꿔요.</li>
@@ -1060,7 +1113,7 @@ svg{display:block;}
       <li><b>내보내기 / 가져오기</b> — 설정을 파일로 백업하고 다른 기기에서 불러올 수 있어요.</li>
       <li><b>초기화</b> — 기본값으로 되돌리거나 모든 데이터를 지울 수 있어요.</li>
     </ul></div></details>
-    <details class="help-sec"><summary>🧽 세차장&amp;샵</summary><div class="help-body"><ul>
+    <details class="help-sec"><summary>🏪 세차장&amp;용품샵</summary><div class="help-body"><ul>
       <li>주변 셀프세차장 검색, 세차장 예약 앱, 세차용품 쇼핑몰로 바로 이동할 수 있어요.</li>
       <li>외부 사이트·앱으로 연결되며, 이 앱과 제휴 관계는 아니에요.</li>
     </ul></div></details>
@@ -1681,40 +1734,111 @@ function canChangeCourse(){
   return true;
 }
 var ciOpen={};
+var ciView={mode:'one',id:null,a:null,b:null};
+function ciShown(){return courses.filter(function(c){return !(c.empty&&!(c.stepIds||[]).length);});}
 function renderCourseInfoPanel(){
   var list=document.getElementById('ci-list');if(!list)return;list.innerHTML='';
-  var running=!!(sessStart||loadSession());
-  var shown=courses.filter(function(c){return !(c.empty&&!(c.stepIds||[]).length);});
-  if(!Object.keys(ciOpen).length&&selCourse) ciOpen[selCourse]=true;
+  var shown=ciShown();
   if(!shown.length){list.innerHTML='<div class="cd-empty">등록된 코스가 없어요</div>';return;}
+  var ids=shown.map(function(c){return c.id;});
+  if(!ciView.id||ids.indexOf(ciView.id)<0) ciView.id=(selCourse&&ids.indexOf(selCourse)>=0)?selCourse:ids[0];
+  if(!ciView.a||ids.indexOf(ciView.a)<0) ciView.a=ciView.id;
+  if(!ciView.b||ids.indexOf(ciView.b)<0||ciView.b===ciView.a) ciView.b=ids.filter(function(x){return x!==ciView.a;})[0]||ciView.a;
+  /* 메뉴판 */
+  var menu=document.createElement('div');menu.className='ci-menu';
   shown.forEach(function(c){
-    var isSel=selCourse===c.id;
-    var card=document.createElement('div');card.className='ci-card'+(isSel?' sel':'')+(ciOpen[c.id]?' open':'');
-    var n=courseStepsOf(c).length;
-    card.innerHTML='<div class="ci-head"><div class="ci-icon">'+c.icon+'</div><div style="flex:1;min-width:0;">'
-      +'<div class="ci-title">'+esc(c.name)+(isSel?'<span class="ci-badge">선택됨</span>':'')+'</div>'
-      +'<div class="ci-sub">'+toHM(getCourseEst(c))+' · '+n+'단계 · '+esc(c.rec||'')+'</div>'
-      +(getCourseKeywords(c)?'<div class="ci-flow">'+esc(getCourseKeywords(c))+'</div>':'')+'</div>'
-      +'<div class="cd-chev ci-chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>';
-    var body=document.createElement('div');body.className='ci-body';
-    var detail=document.createElement('div');detail.style.cssText='display:flex;flex-direction:column;gap:8px;';
-    body.appendChild(detail);
-    if(!isSel){
-      var btn=document.createElement('button');btn.className='btn-primary';btn.style.width='100%';
-      btn.textContent='이 코스로 선택하고 세차설정으로';
-      if(running){btn.disabled=true;btn.style.opacity='.5';}
-      btn.addEventListener('click',function(){if(!canChangeCourse())return;selCourse=c.id;ciOpen={};ciOpen[c.id]=true;switchRoot('home');});
-      body.appendChild(btn);
-      if(running){var note=document.createElement('div');note.className='ci-note';note.textContent='세차 진행 중에는 코스를 바꿀 수 없어요';body.appendChild(note);}
-    }
-    card.appendChild(body);
-    card.querySelector('.ci-head').addEventListener('click',function(){
-      ciOpen[c.id]=!ciOpen[c.id];card.classList.toggle('open');
-      if(ciOpen[c.id]&&!detail.childNodes.length) buildCourseDetail(c,detail);
+    var t=document.createElement('button');t.type='button';
+    t.className='ci-tile'+(ciView.mode==='one'&&ciView.id===c.id?' on':'')+(ciView.mode==='cmp'&&ciView.a===c.id?' pick-a':'')+(ciView.mode==='cmp'&&ciView.b===c.id?' pick-b':'');
+    t.innerHTML='<div class="ci-tile-icon">'+c.icon+'</div><div class="ci-tile-name">'+esc(c.name)+'</div>'
+      +'<div class="ci-tile-sub">'+toHM(getCourseEst(c))+' · '+courseStepsOf(c).length+'단계</div>'
+      +(selCourse===c.id?'<div class="ci-tile-badge">선택됨</div>':'')
+      +(ciView.mode==='cmp'&&ciView.a===c.id?'<div class="ci-tile-ab">A</div>':'')+(ciView.mode==='cmp'&&ciView.b===c.id?'<div class="ci-tile-ab">B</div>':'');
+    t.addEventListener('click',function(){
+      if(ciView.mode==='cmp'){ /* 비교 모드: 탭하면 A/B 교체 */
+        if(c.id===ciView.a||c.id===ciView.b)return;
+        ciView.b=ciView.a;ciView.a=c.id;
+      }else ciView.id=c.id;
+      renderCourseInfoPanel();
     });
-    if(ciOpen[c.id]) buildCourseDetail(c,detail);
-    list.appendChild(card);
+    menu.appendChild(t);
   });
+  var ct=document.createElement('button');ct.type='button';
+  ct.className='ci-tile ci-tile-cmp'+(ciView.mode==='cmp'?' on':'');
+  ct.innerHTML='<div class="ci-tile-icon">⚖️</div><div class="ci-tile-name">코스 비교</div><div class="ci-tile-sub">'+(ciView.mode==='cmp'?'눌러서 비교 닫기':'2개 나란히 보기')+'</div>';
+  ct.disabled=shown.length<2;
+  ct.addEventListener('click',function(){ciView.mode=ciView.mode==='cmp'?'one':'cmp';if(ciView.mode==='cmp'){ciView.a=ciView.id;ciView.b=ids.filter(function(x){return x!==ciView.a;})[0];}renderCourseInfoPanel();});
+  menu.appendChild(ct);
+  list.appendChild(menu);
+  var area=document.createElement('div');area.className='ci-area';list.appendChild(area);
+  if(ciView.mode==='cmp')renderCourseCompare(area,shown);else renderCourseOne(area,shown.find(function(c){return c.id===ciView.id;}));
+}
+function renderCourseOne(area,c){
+  var running=!!(sessStart||loadSession()),isSel=selCourse===c.id;
+  var card=document.createElement('div');card.className='ci-card open'+(isSel?' sel':'');
+  card.innerHTML='<div class="ci-head" style="cursor:default;"><div class="ci-icon">'+c.icon+'</div><div style="flex:1;min-width:0;">'
+    +'<div class="ci-title">'+esc(c.name)+(isSel?'<span class="ci-badge">선택됨</span>':'')+'</div>'
+    +'<div class="ci-sub">'+toHM(getCourseEst(c))+' · '+courseStepsOf(c).length+'단계 · '+esc(c.rec||'')+'</div>'
+    +(getCourseKeywords(c)?'<div class="ci-flow">'+esc(getCourseKeywords(c))+'</div>':'')+'</div></div>';
+  var body=document.createElement('div');body.className='ci-body';
+  var detail=document.createElement('div');detail.style.cssText='display:flex;flex-direction:column;gap:8px;';
+  body.appendChild(detail);buildCourseDetail(c,detail);
+  if(!isSel){
+    var btn=document.createElement('button');btn.className='btn-primary';btn.style.width='100%';
+    btn.textContent='이 코스로 선택하고 세차설정으로';
+    if(running){btn.disabled=true;btn.style.opacity='.5';}
+    btn.addEventListener('click',function(){if(!canChangeCourse())return;selCourse=c.id;ciView.id=c.id;switchRoot('home');});
+    body.appendChild(btn);
+    if(running){var note=document.createElement('div');note.className='ci-note';note.textContent='세차 진행 중에는 코스를 바꿀 수 없어요';body.appendChild(note);}
+  }
+  card.appendChild(body);area.appendChild(card);
+}
+function ciDilOf(s){var p=s.productId?products.find(function(x){return x.id===s.productId;}):null;var d=p?dilCalc(p.id):null;return d?'1:'+d.ratio:'';}
+function renderCourseCompare(area,shown){
+  var A=shown.find(function(c){return c.id===ciView.a;}),B=shown.find(function(c){return c.id===ciView.b;});
+  /* 코스 고르기 */
+  var pick=document.createElement('div');pick.className='cmp-pick';
+  [['a','A'],['b','B']].forEach(function(k){
+    var w=document.createElement('label');w.className='cmp-sel cmp-'+k[0];
+    var sel=document.createElement('select');
+    shown.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;if(c.id===ciView[k[0]])o.selected=true;sel.appendChild(o);});
+    sel.addEventListener('change',function(){var other=k[0]==='a'?'b':'a';if(sel.value===ciView[other])ciView[other]=ciView[k[0]];ciView[k[0]]=sel.value;renderCourseInfoPanel();});
+    var tag=document.createElement('span');tag.className='cmp-tag';tag.textContent=k[1];
+    w.appendChild(tag);w.appendChild(sel);pick.appendChild(w);
+  });
+  area.appendChild(pick);
+  var hint=document.createElement('div');hint.className='cmp-hint';hint.textContent='위 메뉴에서 코스를 누르면 A로 들어가고, 기존 A는 B로 이동해요';area.appendChild(hint);
+  var la=courseStepsOf(A),lb=courseStepsOf(B);
+  function tot(l){return l.reduce(function(x,s){return x+s.est;},0);}
+  function nprod(l){return l.filter(function(s){return s.productId&&products.some(function(p){return p.id===s.productId;});}).length;}
+  var ta=tot(la),tb=tot(lb);
+  function diff(x,y,fmt){if(x===y)return '<span class="cmp-eq">동일</span>';var d=y-x;return '<span class="cmp-d">B '+(d>0?'+':'−')+fmt(Math.abs(d))+'</span>';}
+  var sum=document.createElement('div');sum.className='cmp-table';
+  sum.innerHTML='<div class="cmp-row cmp-hd"><div></div><div class="cmp-a">'+A.icon+' '+esc(A.name)+'</div><div class="cmp-b">'+B.icon+' '+esc(B.name)+'</div></div>'
+    +'<div class="cmp-row"><div class="cmp-k">예상 소요</div><div><b>'+toHM(ta)+'</b></div><div><b>'+toHM(tb)+'</b> '+diff(ta,tb,toHM)+'</div></div>'
+    +'<div class="cmp-row"><div class="cmp-k">단계 수</div><div><b>'+la.length+'</b></div><div><b>'+lb.length+'</b> '+diff(la.length,lb.length,function(v){return v+'단계';})+'</div></div>'
+    +'<div class="cmp-row"><div class="cmp-k">약제</div><div><b>'+nprod(la)+'</b></div><div><b>'+nprod(lb)+'</b></div></div>'
+    +(bookMin>0?'<div class="cmp-row"><div class="cmp-k">예약 대비</div><div class="'+(bookMin-ta>=0?'ok':'warn')+'">'+(bookMin-ta>=0?'+':'-')+toHM(Math.abs(bookMin-ta))+'</div><div class="'+(bookMin-tb>=0?'ok':'warn')+'">'+(bookMin-tb>=0?'+':'-')+toHM(Math.abs(bookMin-tb))+'</div></div>':'')
+    +'<div class="cmp-row"><div class="cmp-k">추천</div><div class="cmp-rec">'+esc(A.rec||'-')+'</div><div class="cmp-rec">'+esc(B.rec||'-')+'</div></div>';
+  area.appendChild(sum);
+  /* 단계 맞춰보기 */
+  var rows=[],i=0,j=0;
+  function idxFrom(l,id,k){for(var x=k;x<l.length;x++)if(l[x].id===id)return x;return -1;}
+  while(i<la.length||j<lb.length){
+    if(i<la.length&&j<lb.length&&la[i].id===lb[j].id){rows.push([la[i],lb[j]]);i++;j++;}
+    else if(i<la.length&&(j>=lb.length||idxFrom(lb,la[i].id,j)<0)){rows.push([la[i],null]);i++;}
+    else if(j<lb.length&&(i>=la.length||idxFrom(la,lb[j].id,i)<0)){rows.push([null,lb[j]]);j++;}
+    else {rows.push([la[i],null]);i++;}
+  }
+  var only=rows.filter(function(r){return !r[0]||!r[1];}).length;
+  var st=document.createElement('div');st.className='cmp-steps';
+  var h='<div class="cmp-steps-t">단계 비교 <span>공통 '+(rows.length-only)+' · 차이 '+only+'</span></div>'
+    +'<div class="cmp-srow cmp-hd"><div>단계</div><div class="cmp-a">A</div><div class="cmp-b">B</div></div>';
+  rows.forEach(function(r){
+    var s=r[0]||r[1],cls=!r[0]?' only-b':!r[1]?' only-a':'';
+    function cell(x){if(!x)return '<div class="cmp-none">—</div>';var d=ciDilOf(x);return '<div>'+x.est+'분'+(d?' <span class="cd-dil">'+d+'</span>':'')+'</div>';}
+    h+='<div class="cmp-srow'+cls+'"><div class="cmp-sname">'+esc(s.name)+'</div>'+cell(r[0])+cell(r[1])+'</div>';
+  });
+  st.innerHTML=h;area.appendChild(st);
 }
 
 function openCourseInfo(cid){
@@ -3197,16 +3321,24 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.1', APP_BUILD='20261114.2';
+var APP_VER='1.0.1', APP_BUILD='20261114.5';
 (function(){
-  var vEl=document.getElementById('app-ver'), stEl=document.getElementById('app-ver-st'), bEl=document.getElementById('app-upd'), last=0, remote=null;
-  if(vEl)vEl.textContent='v'+APP_VER;
+  var last=0, remote=null, busy=false;
+  function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
+  all('app-ver').forEach(function(el){el.textContent='v'+APP_VER;});
+  all('app-ver-st').forEach(function(el){el.textContent='';});
   function show(r){
     try{if(sessionStorage.getItem('dt_upd_try')===r.build)return;}catch(e){}
-    remote=r;bEl.innerHTML='';bEl.appendChild(document.createTextNode('새 버전 '));
-    if(r.version&&r.version!==APP_VER){var sv=document.createElement('span');sv.className='upd-v';sv.textContent='v'+r.version+' ';bEl.appendChild(sv);}
-    bEl.appendChild(document.createTextNode('↻'));
-    bEl.title='새 버전이 있습니다. 눌러서 적용';bEl.hidden=false;stEl.hidden=true;
+    remote=r;
+    all('app-upd').forEach(function(b){
+      b.innerHTML='';b.appendChild(document.createTextNode('새 버전 '));
+      if(r.version&&r.version!==APP_VER){var sv=document.createElement('span');sv.className='upd-v';sv.textContent='v'+r.version+' ';b.appendChild(sv);}
+      b.appendChild(document.createTextNode('↻'));b.title='새 버전이 있습니다. 눌러서 적용';b.hidden=false;});
+    all('app-ver-st').forEach(function(el){el.hidden=true;});
+  }
+  function latest(){
+    all('app-upd').forEach(function(b){b.hidden=true;});
+    all('app-ver-st').forEach(function(el){el.hidden=false;el.textContent='최신 버전 ✓';el.className='app-ver-st ok';});
   }
   function check(force){
     if(!/^https?:$/.test(location.protocol)||!navigator.onLine)return;
@@ -3214,19 +3346,20 @@ var APP_VER='1.0.1', APP_BUILD='20261114.2';
     fetch('version.json?t='+now,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(r){
       if(!r||typeof r.build!=='string'||!/^[\w.\-]{1,30}$/.test(r.build))return;
       if(r.version&&!/^[\w.\-]{1,20}$/.test(r.version))r.version='';
-      if(r.build>APP_BUILD)show(r);else{bEl.hidden=true;stEl.hidden=false;stEl.textContent='최신 버전 ✓';stEl.className='app-ver-st ok';}
+      if(r.build>APP_BUILD)show(r);else latest();
     }).catch(function(){});
   }
-  bEl.addEventListener('click',function(){
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.app-upd');if(!b||busy)return;
     if(typeof sessStart!=='undefined'&&sessStart&&!confirm('세차 타이머가 진행 중입니다.\n지금 새 버전을 적용할까요? (진행 기록은 유지됩니다)'))return;
+    busy=true;
     try{if(remote)sessionStorage.setItem('dt_upd_try',remote.build);}catch(e){}
-    bEl.textContent='적용 중…';
+    all('app-upd').forEach(function(x){x.textContent='적용 중…';});
     var go=function(){location.reload();};
     if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
       navigator.serviceWorker.getRegistration().then(function(reg){return reg?reg.update():null;}).then(go,go);
     }else go();
   });
-  if(stEl)stEl.textContent='';
   window.addEventListener('load',function(){setTimeout(function(){check(true);},1500);});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')check(false);});
   window.addEventListener('online',function(){check(true);});
