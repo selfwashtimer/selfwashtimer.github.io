@@ -646,7 +646,8 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .level-rows.single .pt-del,#pm-levels.single .pt-del{visibility:hidden;}
 .emoji-more{font-size:20px;font-weight:700;color:var(--tx2);letter-spacing:-1px;}
 .emoji-more.on{background:var(--tx);color:#fff;border-color:var(--tx);}
-.emoji-more-panel{margin-top:8px;padding:8px 10px 10px;border:1.5px solid var(--b2);border-radius:10px;background:var(--s1);max-height:240px;overflow-y:auto;}
+.modal-box>*{flex-shrink:0;}
+.emoji-more-panel{flex-shrink:0;margin-top:8px;padding:8px 10px 10px;border:1.5px solid var(--b2);border-radius:10px;background:var(--s1);max-height:240px;overflow-y:auto;}
 .emoji-more-h{font-size:10.5px;font-weight:700;color:var(--tx3);margin:6px 0 5px;font-family:var(--mono);}
 .emoji-more-h:first-child{margin-top:0;}
 .emoji-more-grid{display:flex;flex-wrap:wrap;gap:5px;}
@@ -3707,7 +3708,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.11', APP_BUILD='20261116.11';
+var APP_VER='1.0.12', APP_BUILD='20261116.12';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
