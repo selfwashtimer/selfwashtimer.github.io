@@ -1,6 +1,6 @@
 /* 디테일링 셀프세차 타이머 — 오프라인 캐시
    앱을 고칠 때마다 CACHE 버전 숫자를 올려야 사용자 기기에 새 버전이 반영됩니다. */
-var CACHE = 'dst-v4';
+var CACHE = 'dst-v5';
 var CORE = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -60,11 +60,13 @@ self.addEventListener('fetch', function (e) {
 /* 워치·알림: 알림 버튼(완료/일시정지)을 앱 화면에 전달 */
 self.addEventListener('notificationclick', function (e) {
   var act = e.action || 'open';
-  e.notification.close();
+  /* 버튼을 눌렀을 때는 알림을 닫지 않음 → 앱이 같은 알림을 다음 단계 내용으로 바로 갱신 */
+  if (act !== 'done' && act !== 'pause') e.notification.close();
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
     if (act === 'done' || act === 'pause') {
       list.forEach(function (c) { c.postMessage({ type: 'dt-noti', action: act }); });
       if (list.length) return;
+      e.notification.close();
     }
     for (var i = 0; i < list.length; i++) { if ('focus' in list[i]) return list[i].focus(); }
     if (self.clients.openWindow) return self.clients.openWindow('./');
