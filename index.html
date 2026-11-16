@@ -1497,9 +1497,11 @@ function setRootUI(tab){
     document.getElementById(t+'-panel').className='root-panel'+(t===tab?' on':'');
   });
 }
+var curRoot=null;
 function switchRoot(tab){
+  var from=curRoot;curRoot=tab;
   setRootUI(tab);
-  if(tab==='customize') refreshCustomizePanes();
+  if(tab==='customize'){ refreshCustomizePanes(); if(from!=='customize') switchCustTab('settings'); }
   if(tab==='courseinfo') renderCourseInfoPanel();
   if(tab==='shop') renderShopPanel();
   if(tab==='home'){ renderSetup(); updateResumeBanner(); }
@@ -3606,7 +3608,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.8', APP_BUILD='20261116.7';
+var APP_VER='1.0.9', APP_BUILD='20261116.8';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
