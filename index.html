@@ -236,6 +236,29 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .cmp-none{color:var(--tx3);}
 .cmp-srow.only-a{background:rgba(58,125,0,.06);}
 .cmp-srow.only-b{background:rgba(0,112,192,.06);}
+/* 코스별 단계 시간·순서 */
+.cm-steps-hd{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+.cm-hint{font-size:11px;font-weight:400;color:var(--tx3);}
+.cm-total{margin-left:auto;font-size:12px;font-weight:700;font-family:var(--mono);color:var(--acc);}
+.cm-sel{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;margin-top:4px;}
+.cm-row{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--s1);border:1px solid var(--b2);border-radius:9px;}
+.cm-row .drag-h{margin:-6px 0 -6px -4px;width:24px;}
+.cm-row .ord-num{min-width:24px;height:22px;font-size:11px;}
+.cm-name{flex:1;min-width:0;font-size:13px;font-weight:600;line-height:1.3;word-break:keep-all;}
+.cm-base{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;color:var(--ora);background:var(--ora2);border:none;border-radius:4px;padding:1px 5px;cursor:pointer;font-family:inherit;}
+.cm-ts{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.ts-btn{min-width:28px;height:28px;padding:0 6px;border-radius:7px;border:1px solid var(--b2);background:var(--s2);color:var(--tx);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--mono);}
+.ts-val{min-width:42px;text-align:center;font-size:13px;font-weight:700;font-family:var(--mono);}
+.ts-val.mod,.cd-est.mod{color:var(--ora);font-weight:700;}
+.cm-del{width:26px;height:26px;border-radius:7px;border:1px solid var(--b2);background:transparent;color:var(--tx3);font-size:12px;cursor:pointer;flex-shrink:0;}
+.cm-add{width:18px;height:18px;border-radius:5px;background:var(--acc2);color:var(--acc);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+.cm-empty{font-size:12px;color:var(--tx3);padding:10px;text-align:center;}
+.cd-est-btn{background:var(--s2);border:1px solid var(--b2);border-radius:6px;padding:2px 7px;cursor:pointer;font-family:var(--mono);color:var(--tx2);}
+.cd-tbar{display:none;align-items:center;gap:5px;flex-wrap:wrap;padding:8px 12px 10px 44px;background:var(--acc3);border-top:1px dashed var(--b2);}
+.cd-row.tedit .cd-tbar{display:flex;}
+.ts-base{font-size:11px;color:var(--tx3);margin-left:4px;}
+.ts-reset{margin-left:4px;font-size:11px;font-weight:700;color:var(--ora);background:var(--ora2);border:none;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:inherit;}
+.ts-note{width:100%;font-size:10.5px;color:var(--tx3);}
 /* 코스 상세 */
 .cd-sum{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:9px;overflow:hidden;}
 .cd-sum-item{flex:1;padding:7px 0;text-align:center;}
@@ -1206,6 +1229,7 @@ svg{display:block;}
     </ul></div></details>
     <details class="help-sec"><summary>⚙️ 설정</summary><div class="help-body"><ul>
       <li><b>단계 · 약제 · 코스</b> — 나만의 단계와 약제, 코스를 추가·수정할 수 있어요. 왼쪽 손잡이(⠿)를 끌어서 순서를 바꿔요.</li>
+      <li><b>코스 편집</b> — 코스에 넣은 단계를 끌어서 순서를 바꾸고, −/+ 로 그 코스에서만 쓸 단계 시간을 정할 수 있어요. 세차설정의 '선택한 코스 구성'에서도 시간(✎)을 눌러 바로 조절할 수 있어요.</li>
       <li><b>약제 등록</b> — 제품명을 입력하면 등록된 주요 제품의 희석비가 자동으로 채워져요. 목록에 없으면 <b>웹에서 희석비 찾기</b>나 <b>등록 요청</b>을 이용하세요.</li>
       <li><b>내보내기 / 가져오기</b> — 설정을 파일로 백업하고 다른 기기에서 불러올 수 있어요.</li>
       <li><b>초기화</b> — 기본값으로 되돌리거나 모든 데이터를 지울 수 있어요.</li>
@@ -1365,7 +1389,9 @@ svg{display:block;}
     </div>
     <div class="field-group"><div class="field-label">한 줄 설명</div><input type="text" id="cm-rec" placeholder="예: 평소 주간 관리"></div>
     <div class="field-group">
-      <div class="field-label">포함할 단계 선택 (순서대로 체크)</div>
+      <div class="field-label cm-steps-hd">코스 단계 <span class="cm-hint">⠿ 끌어서 순서 · −/+ 로 시간</span><span class="cm-total" id="cm-total"></span></div>
+      <div class="cm-sel" id="cm-sel"></div>
+      <div class="field-label" style="margin-top:10px;">추가할 수 있는 단계 <span class="cm-hint">눌러서 코스 끝에 추가</span></div>
       <div class="step-checklist" id="cm-steps"></div>
     </div>
     <div class="modal-actions">
@@ -1539,8 +1565,11 @@ function renderSetup(){
   updatePreview();
 }
 
+/* 코스별 단계 시간: c.stepEst[단계id]가 있으면 그 값, 없으면 단계 기본 시간 */
+function stepEstIn(c,s){var v=c&&c.stepEst?c.stepEst[s.id]:null;v=parseInt(v,10);return (v>=1&&v<=180)?v:s.est;}
+function stepWithEst(c,s,extra){var o=Object.assign({},s,extra||{});o.baseEst=s.est;o.est=stepEstIn(c,s);o.estMod=o.est!==s.est;return o;}
 function getCourseEst(c){
-  return (c.stepIds||[]).reduce(function(a,sid){var s=steps.find(function(x){return x.id===sid;});return a+(s?s.est:0);},0);
+  return (c.stepIds||[]).reduce(function(a,sid){var s=steps.find(function(x){return x.id===sid;});return a+(s?stepEstIn(c,s):0);},0);
 }
 
 function getActiveSteps(){
@@ -1550,7 +1579,7 @@ function getActiveSteps(){
   var n=1;
   return (c.stepIds||[]).map(function(sid){
     var s=steps.find(function(x){return x.id===sid;});
-    return s?Object.assign({},s,{dn:n++}):null;
+    return s?stepWithEst(c,s,{dn:n++}):null;
   }).filter(Boolean);
 }
 
@@ -1786,10 +1815,11 @@ function renderDilGrid(containerId,showAll){
 function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
 function courseStepsOf(c){
   var n=1;
-  return (c.stepIds||[]).map(function(sid){var s=steps.find(function(x){return x.id===sid;});return s?Object.assign({},s,{dn:n++}):null;}).filter(Boolean);
+  return (c.stepIds||[]).map(function(sid){var s=steps.find(function(x){return x.id===sid;});return s?stepWithEst(c,s,{dn:n++}):null;}).filter(Boolean);
 }
 /* 코스 요약 + 단계 목록(탭하면 약제·희석·포인트 펼침) */
-function buildCourseDetail(c,container){
+var cdEditSid=null;
+function buildCourseDetail(c,container,editable){
   container.innerHTML='';
   var list=courseStepsOf(c);
   var tot=list.reduce(function(a,s){return a+s.est;},0);
@@ -1807,7 +1837,7 @@ function buildCourseDetail(c,container){
     var d=p?dilCalc(p.id):null;
     row.innerHTML='<div class="cd-row-head"><div class="cd-n">'+pad(s.dn)+'</div><div class="cd-name">'+esc(s.name)+'</div>'
       +(d?'<div class="cd-dil">1:'+d.ratio+'</div>':'')
-      +'<div class="cd-est">'+s.est+'분</div>'
+      +(editable?'<button type="button" class="cd-est cd-est-btn'+(s.estMod?' mod':'')+'" title="이 코스의 단계 시간 조절">'+s.est+'분 ✎</button>':'<div class="cd-est'+(s.estMod?' mod':'')+'"'+(s.estMod?' title="기본 '+s.baseEst+'분에서 변경"':'')+'>'+s.est+'분</div>')
       +'<div class="cd-chev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
       +'<div class="cd-body">'
       +(s.prod?'<div class="cd-line">🧴 '+esc(s.prod)+'</div>':'')
@@ -1815,6 +1845,27 @@ function buildCourseDetail(c,container){
       +((s.pts&&s.pts.length)?'<div class="cd-line">'+s.pts.map(function(t){return '<span class="pt">'+esc(t)+'</span>';}).join('')+'</div>':'')
       +'</div>';
     row.querySelector('.cd-row-head').addEventListener('click',function(){row.classList.toggle('open');});
+    if(editable){
+      var bar=document.createElement('div');bar.className='cd-tbar';
+      bar.innerHTML='<button type="button" class="ts-btn" data-d="-5">−5</button><button type="button" class="ts-btn" data-d="-1">−1</button>'
+        +'<span class="ts-val">'+s.est+'분</span><button type="button" class="ts-btn" data-d="1">+1</button><button type="button" class="ts-btn" data-d="5">+5</button>'
+        +'<span class="ts-base">'+(s.estMod?'기본 '+s.baseEst+'분 <button type="button" class="ts-reset">기본값</button>':'기본 시간')+'</span>'
+        +'<div class="ts-note">이 코스에만 저장돼요</div>';
+      if(cdEditSid===s.id)row.classList.add('tedit');
+      row.querySelector('.cd-est-btn').addEventListener('click',function(ev){ev.stopPropagation();
+        if(sessStart||loadSession()){alert('진행 중인 세차가 있어 시간을 바꿀 수 없어요.');return;}
+        cdEditSid=row.classList.contains('tedit')?null:s.id;
+        container.querySelectorAll('.cd-row.tedit').forEach(function(r){if(r!==row)r.classList.remove('tedit');});
+        row.classList.toggle('tedit');});
+      bar.addEventListener('click',function(ev){ev.stopPropagation();
+        var b=ev.target.closest('button');if(!b)return;
+        var nv=b.classList.contains('ts-reset')?s.baseEst:Math.max(1,Math.min(180,s.est+parseInt(b.getAttribute('data-d'),10)));
+        courseSetEst(c,s.id,nv,s.baseEst);cdEditSid=s.id;
+        saveCourses();if(typeof renderCoursesList==='function')renderCoursesList();
+        applyBookRec();renderSetup();
+      });
+      row.insertBefore(bar,row.querySelector('.cd-body'));
+    }
     box.appendChild(row);
   });
   container.appendChild(box);
@@ -1826,7 +1877,7 @@ function renderCourseDetailInline(){
   if(!c||(c.empty&&!(c.stepIds||[]).length)){sec.style.display='none';return;}
   sec.style.display='';
   document.getElementById('course-detail-lbl').textContent='선택한 코스 구성 · '+c.icon+' '+c.name;
-  buildCourseDetail(c,el);
+  buildCourseDetail(c,el,true);
 }
 /* 진행 중 세차가 있으면 코스 변경 불가 (진행 중 세션이 selCourse를 사용) */
 function canChangeCourse(){
@@ -2129,7 +2180,7 @@ function getActiveStepsFromCourse(courseId){
   var n=1;
   return (c.stepIds||[]).map(function(sid){
     var s=steps.find(function(x){return x.id===sid;});
-    return s?Object.assign({},s,{dn:n++}):null;
+    return s?stepWithEst(c,s,{dn:n++}):null;
   }).filter(Boolean);
 }
 
@@ -2974,28 +3025,55 @@ function openCourseModal(id,e){
   /* 아이콘 */
   document.getElementById('cm-emoji').dataset.open='0';
   renderIconPicker(c?c.icon:ICONS[0]);
-  /* 단계 체크리스트 */
-  var checklist=document.getElementById('cm-steps');checklist.innerHTML='';
-  var selectedIds=c?new Set(c.stepIds):new Set();
-  steps.forEach(function(s){
-    var item=document.createElement('div');
-    item.className='step-check-item'+(selectedIds.has(s.id)?' checked':'');
-    item.innerHTML='<div class="step-check-box">'+svgChk(10)+'</div><div class="step-check-name">'+s.name+'</div><div class="step-check-est">'+s.est+'분</div>';
-    item.addEventListener('click',function(){
-      item.classList.toggle('checked');
-    });
-    item.dataset.sid=s.id;
-    checklist.appendChild(item);
-  });
+  /* 코스 단계: 선택된 단계(순서·시간) + 추가 가능한 단계 */
+  cmSel=c?(c.stepIds||[]).filter(function(sid){return steps.some(function(x){return x.id===sid;});}).map(function(sid){var st=steps.find(function(x){return x.id===sid;});var v=stepEstIn(c,st);return {id:sid,est:v};}):[];
+  renderCmSteps();
   openModal('course-modal');
+}
+var cmSel=[];
+function courseSetEst(c,sid,v,base){c.stepEst=c.stepEst||{};if(v===base)delete c.stepEst[sid];else c.stepEst[sid]=v;if(!Object.keys(c.stepEst).length)delete c.stepEst;}
+function renderCmSteps(){
+  var sel=document.getElementById('cm-sel'),av=document.getElementById('cm-steps');if(!sel||!av)return;
+  sel.innerHTML='';av.innerHTML='';
+  if(!cmSel.length)sel.innerHTML='<div class="cm-empty">아래에서 단계를 눌러 추가하세요</div>';
+  cmSel.forEach(function(it,idx){
+    var st=steps.find(function(x){return x.id===it.id;});if(!st)return;
+    var mod=it.est!==st.est;
+    var row=document.createElement('div');row.className='cm-row sortable';
+    row.innerHTML='<div class="drag-h" title="끌어서 순서 변경">⠿</div><div class="ord-num">'+(idx+1)+'</div>'
+      +'<div class="cm-name">'+esc(st.name)+(mod?'<button type="button" class="cm-base" title="기본값으로">기본 '+st.est+'분 ↺</button>':'')+'</div>'
+      +'<div class="cm-ts"><button type="button" class="ts-btn" data-d="-1">−</button><span class="ts-val'+(mod?' mod':'')+'">'+it.est+'분</span><button type="button" class="ts-btn" data-d="1">+</button></div>'
+      +'<button type="button" class="cm-del" title="빼기">✕</button>';
+    row.addEventListener('click',function(ev){
+      var b=ev.target.closest('button');if(!b)return;
+      if(b.classList.contains('cm-del')){cmSel.splice(cmSel.indexOf(it),1);}
+      else if(b.classList.contains('cm-base')){it.est=st.est;}
+      else{it.est=Math.max(1,Math.min(180,it.est+parseInt(b.getAttribute('data-d'),10)));}
+      renderCmSteps();
+    });
+    sel.appendChild(row);
+  });
+  makeSortable(sel,function(){return cmSel;},renderCmSteps);
+  var used={};cmSel.forEach(function(it){used[it.id]=1;});
+  steps.forEach(function(st){
+    if(used[st.id])return;
+    var item=document.createElement('div');item.className='step-check-item';
+    item.innerHTML='<div class="cm-add">+</div><div class="step-check-name">'+esc(st.name)+'</div><div class="step-check-est">'+st.est+'분</div>';
+    item.addEventListener('click',function(){cmSel.push({id:st.id,est:st.est});renderCmSteps();});
+    av.appendChild(item);
+  });
+  if(!av.children.length)av.innerHTML='<div class="cm-empty">모든 단계가 코스에 들어가 있어요</div>';
+  var tot=cmSel.reduce(function(a,x){return a+x.est;},0);
+  var t=document.getElementById('cm-total');if(t)t.textContent=cmSel.length?'총 '+cmSel.length+'단계 · '+toHM(tot):'';
 }
 function saveCourse(){
   var name=document.getElementById('cm-name').value.trim();
   if(!name){alert('코스 이름을 입력해주세요.');return;}
   var selEm=document.querySelector('#cm-emoji .emoji-btn.sel:not(.emoji-more)');
   var icon=selEm?selEm.textContent:ICONS[0];
-  var checkedItems=document.querySelectorAll('#cm-steps .step-check-item.checked');
-  var stepIds=Array.from(checkedItems).map(function(item){return item.dataset.sid;});
+  var stepIds=cmSel.map(function(it){return it.id;});
+  var stepEst={};cmSel.forEach(function(it){var st=steps.find(function(x){return x.id===it.id;});if(st&&it.est!==st.est)stepEst[it.id]=it.est;});
+  if((sessStart||loadSession())&&editingCourseId===selCourse){alert('진행 중인 세차의 코스는 세차를 마친 뒤에 수정할 수 있어요.');return;}
   var isCustomSlot=editingCourseId==='custom1'||editingCourseId==='custom2';
   var course={
     id:editingCourseId||uid(),
@@ -3004,13 +3082,14 @@ function saveCourse(){
     stepIds:stepIds,
     empty:false
   };
+  if(Object.keys(stepEst).length)course.stepEst=stepEst;
   if(editingCourseId){
     var idx=courses.findIndex(function(x){return x.id===editingCourseId;});
     if(idx>=0)courses[idx]=course;
   } else {
     courses.push(course);
   }
-  saveCourses();renderCoursesList();closeModal('course-modal');renderSetup();
+  saveCourses();renderCoursesList();closeModal('course-modal');applyBookRec();renderSetup();
   /* 나만의 코스 슬롯을 채웠으면 자동 선택 */
   if(isCustomSlot&&stepIds.length>0){selCourse=course.id;renderSetup();}
 }
@@ -3026,7 +3105,7 @@ function deleteCourse(){
     courses=courses.filter(function(x){return x.id!==editingCourseId;});
   }
   if(selCourse===editingCourseId)selCourse=courses.find(function(c){return !c.empty&&c.stepIds.length;})?courses.find(function(c){return !c.empty&&c.stepIds.length;}).id:null;
-  saveCourses();renderCoursesList();closeModal('course-modal');renderSetup();
+  saveCourses();renderCoursesList();closeModal('course-modal');applyBookRec();renderSetup();
 }
 
 /* ── 앱 설정 ── */
@@ -3628,7 +3707,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.10', APP_BUILD='20261116.10';
+var APP_VER='1.0.11', APP_BUILD='20261116.11';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
