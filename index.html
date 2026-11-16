@@ -3437,26 +3437,28 @@ function voiceUnlock(){ /* 사용자 터치 시점에 호출: 이후 자동 안�
   voiceEls();
   try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}catch(e){}
 }
-/* 안내 중 음악 볼륨 낮추기: 4초 미만 무음을 '반복 재생'해서 안내가 끝날 때까지 유지 */
-var voiceDuck=null, voiceChimeEl=null, voiceDuckTimer=null, voiceSeq=0;
+/* 안내 중 음악 볼륨 낮추기: 5초 미만 소리(알림음+무음 4.4초)를 재생하고,
+   안내가 길면 끝날 때까지 무음 4.4초를 이어서 다시 재생 (v1.0.4에서 효과가 확인된 방식) */
+var voiceDuck=null, voiceDuckTimer=null, voiceSeq=0, voiceSpeaking=false;
 function voiceEls(){
   try{
-    if(!voiceDuck){voiceDuck=new Audio();voiceDuck.loop=true;voiceDuck.preload='auto';if(!voiceSrc.s)voiceSrc.s=voiceWav(false,3.5);voiceDuck.src=voiceSrc.s;}
-    if(!voiceChimeEl){voiceChimeEl=new Audio();voiceChimeEl.preload='auto';if(!voiceSrc.c)voiceSrc.c=voiceWav(true,0.5);voiceChimeEl.src=voiceSrc.c;}
+    if(!voiceDuck){voiceDuck=new Audio();voiceDuck.preload='auto';
+      voiceDuck.addEventListener('ended',function(){
+        if(voiceSpeaking){try{if(!voiceSrc.s)voiceSrc.s=voiceWav(false,4.4);voiceDuck.src=voiceSrc.s;voiceDuck.play();}catch(e){}}
+      });}
   }catch(e){}
 }
 function voiceDuckStop(seq){
   if(seq!==undefined&&seq!==voiceSeq)return;
-  clearTimeout(voiceDuckTimer);voiceDuckTimer=null;
-  try{if(voiceDuck){voiceDuck.pause();voiceDuck.currentTime=0;}}catch(e){}
+  voiceSpeaking=false;clearTimeout(voiceDuckTimer);voiceDuckTimer=null;
+  try{if(voiceDuck)voiceDuck.pause();}catch(e){}
 }
 function voiceSay(text,force){
   if(!voiceOK||!text)return;
   if(!voiceCfg.on&&!force)return;
   try{speechSynthesis.cancel();}catch(e){}
   var seq=++voiceSeq, done=false;
-  voiceEls();
-  /* 안전장치: onend가 오지 않는 기기 대비, 글자 수로 예상 길이를 계산해 그 뒤에 볼륨 복구 */
+  voiceEls();voiceSpeaking=true;
   var estMs=Math.min(45000,Math.max(3000,text.length*170/voiceCfg.rate+2500));
   clearTimeout(voiceDuckTimer);voiceDuckTimer=setTimeout(function(){voiceDuckStop(seq);},estMs);
   var go=function(){if(done)return;done=true;
@@ -3466,9 +3468,9 @@ function voiceSay(text,force){
     try{speechSynthesis.speak(u);}catch(e){voiceDuckStop(seq);}
   };
   try{
-    var p=voiceDuck?voiceDuck.play():null;
-    if(voiceCfg.chime&&voiceChimeEl){try{voiceChimeEl.currentTime=0;voiceChimeEl.play();}catch(e){}}
-    var wait=voiceCfg.chime?550:250;
+    var k=voiceCfg.chime?'c':'s';if(!voiceSrc[k])voiceSrc[k]=voiceWav(!!voiceCfg.chime,4.4);
+    voiceDuck.src=voiceSrc[k];
+    var p=voiceDuck.play(),wait=voiceCfg.chime?550:250;
     if(p&&p.then){p.then(function(){setTimeout(go,wait);},go);}else setTimeout(go,wait);
     setTimeout(go,1500);
   }catch(e){go();}
@@ -3544,7 +3546,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.5', APP_BUILD='20261116.4';
+var APP_VER='1.0.6', APP_BUILD='20261116.5';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
