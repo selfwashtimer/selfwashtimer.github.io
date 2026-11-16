@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="세차 타이머">
 <meta name="theme-color" content="#0b6fb8">
 <meta name="description" content="셀프세차 단계별 타이머 · 약제 희석 계산 · 코스 관리">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; media-src 'self' data: blob:">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -639,6 +639,14 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .resume-banner-body{flex:1;min-width:0;}
 .resume-banner-title{font-size:14px;font-weight:700;color:var(--acc);}
 .resume-banner-sub{font-size:12px;color:var(--tx2);font-family:var(--mono);margin-top:2px;}
+.btn-voice{background:var(--s2);border:1px solid var(--b2);border-radius:6px;font-size:13px;padding:4px 8px;cursor:pointer;line-height:1.2;}
+.btn-voice.off{opacity:.55;filter:grayscale(1);}
+.vo-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;flex-wrap:wrap;}
+.vo-lbl{font-size:13px;font-weight:600;color:var(--tx2);}
+.vo-seg{display:flex;gap:4px;flex-wrap:wrap;}
+.vo-seg button{padding:5px 11px;border:1px solid var(--b2);border-radius:14px;background:var(--s2);font-size:12px;font-family:inherit;color:var(--tx2);cursor:pointer;}
+.vo-seg button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;}
+.vo-note{font-size:11px;margin-top:6px;}
 .btn-end{background:var(--red2);border:1px solid rgba(192,48,0,.3);border-radius:6px;color:var(--red);font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer;font-family:var(--sans);}
 .btn-resume-end{height:40px;padding:0 12px;background:var(--s2);border:1px solid rgba(192,48,0,.3);border-radius:10px;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);flex-shrink:0;}
 .end-sum{display:flex;background:var(--s2);border:1px solid var(--b1);border-radius:9px;overflow:hidden;margin:4px 0 6px;}
@@ -890,6 +898,7 @@ svg{display:block;}
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <div class="hd-clock-wrap"><span class="hd-clock-lbl">현재시간</span><div class="hd-clock" id="hdclock">00:00</div></div>
+          <button type="button" class="btn-voice" id="btn-voice" onclick="voiceToggle()" title="음성 안내 켜기/끄기">🔊</button>
           <button class="btn-end" onclick="openEndModal()">⏹ 종료</button>
           <button class="btn-cfg" onclick="goHome()">🏠 홈</button>
         </div>
@@ -1062,6 +1071,17 @@ svg{display:block;}
       <div class="io-actions"><button class="btn-primary" onclick="openModal('help-modal')">도움말 보기</button></div>
     </div>
 
+    <div class="io-box" id="voice-box">
+      <div class="io-title">🔊 음성 안내</div>
+      <div class="io-desc">세차 중 화면을 보지 않아도 단계 시작, 남은 시간, 예약 종료를 음성으로 알려줘요.</div>
+      <div class="vo-row"><span class="vo-lbl">음성 안내</span><div class="vo-seg" data-k="on"><button type="button" data-v="1">켜기</button><button type="button" data-v="0">끄기</button></div></div>
+      <div class="vo-row"><span class="vo-lbl">정기 안내</span><div class="vo-seg" data-k="every"><button type="button" data-v="0">안 함</button><button type="button" data-v="5">5분</button><button type="button" data-v="10">10분</button><button type="button" data-v="15">15분</button></div></div>
+      <div class="vo-row"><span class="vo-lbl">말하기 속도</span><div class="vo-seg" data-k="rate"><button type="button" data-v="0.9">느리게</button><button type="button" data-v="1">보통</button><button type="button" data-v="1.15">빠르게</button></div></div>
+      <div class="vo-row"><span class="vo-lbl">알림음</span><div class="vo-seg" data-k="chime"><button type="button" data-v="1">켜기</button><button type="button" data-v="0">끄기</button></div></div>
+      <div class="io-actions"><button class="btn-primary" onclick="voicePreview()">▶ 미리 듣기</button></div>
+      <div class="io-desc vo-note" id="vo-note">멜론·지니 등 음악을 들으면서도 안내가 나오도록 했어요(기기·앱에 따라 다를 수 있어요). 고압수 소음이 크면 블루투스 이어폰을 권장해요. 세차 중 화면이 꺼지면 안내가 멈출 수 있어요.</div>
+    </div>
+
     <div class="io-box">
       <div class="io-title">✉️ 문의 · 의견 보내기</div>
       <div class="io-desc">버그, 기능 제안, 추가했으면 하는 약제·세차장을 알려주세요. 메일 앱이 열리며 앱 버전과 기기 정보가 자동으로 들어갑니다.</div>
@@ -1113,6 +1133,7 @@ svg{display:block;}
       <li><b>코스</b> — 진행 중인 코스의 전체 단계와 포인트를 볼 수 있어요.</li>
       <li><b>기록</b> — 끝낸 세차의 단계별 소요 시간이 저장돼요.</li>
       <li>앱을 닫았다가 다시 열어도 진행 중인 세차를 이어서 할 수 있어요.</li>
+      <li><b>🔊 음성 안내</b> — 단계 시작, 예상 시간 1분 전·초과, 정기 진행 상황, 세차장 예약 종료 30·15·5분 전을 음성으로 알려줘요. 상단 🔊 버튼으로 켜고 끄고, 설정 › 설정에서 간격·속도를 바꿀 수 있어요.</li>
     </ul></div></details>
     <details class="help-sec"><summary>📋 세차코스정보</summary><div class="help-body"><ul>
       <li>위쪽 메뉴판에서 코스를 누르면 아래에 단계·희석·포인트가 자세히 나와요. 바로 그 코스로 선택할 수도 있어요.</li>
@@ -2086,6 +2107,7 @@ function startApp(){
   saveSession();
   scrollToCur();
   updateTimerTabBadge();
+  voiceUnlock();vState.book={};vState.lastPer=0;voiceStep('세차를 시작합니다. ');
 }
 
 function goSetup(){
@@ -2133,6 +2155,7 @@ function togglePause(){
   });
   saveSession();
   updateTimerTabBadge();
+  voiceSay(isPaused?'일시정지합니다.':'다시 시작합니다.');
 }
 
 function tickGlobal(){
@@ -2178,6 +2201,7 @@ function tickGlobal(){
   } else {
     bookEl.textContent='미설정';
   }
+  voiceTick(now,stepElSec,remMin,projDate);
 }
 
 /* ══ STEP ACTIONS ══ */
@@ -2200,6 +2224,7 @@ function completeStep(){
   if(cur>=activeSteps.length){clearInterval(stepIv);renderSteps();updateProg();showDone();return;}
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
+  voiceStep('완료. ');
 }
 function skipStep(){
   if(cur>=activeSteps.length)return;
@@ -2207,11 +2232,13 @@ function skipStep(){
   if(cur>=activeSteps.length){clearInterval(stepIv);renderSteps();updateProg();showDone();return;}
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
+  voiceStep('건너뜁니다. ');
 }
 function undoStep(){
   if(cur===0)return;cur--;delete results[cur];stepSec=0;totalPaused=0;
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
+  voiceStep('이전 단계로 돌아갑니다. ');
 }
 function scrollToCur(){setTimeout(function(){var el=document.getElementById('sc-'+cur);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);}
 
@@ -2381,6 +2408,7 @@ var pendingTimeUpdate=null;
 function showDone(early){
   var totalSec=Math.floor((new Date()-sessStart)/1000);
   var totalMin=Math.round(totalSec/60);
+  voiceSay(early?'세차를 종료했습니다. 총 '+spokenMin(totalMin)+' 진행했습니다.':'모든 단계를 마쳤습니다. 총 '+spokenMin(totalMin)+' 걸렸습니다. 수고하셨습니다.');
   var tot=activeSteps.reduce(function(a,s){return a+s.est;},0);
   var comp=Object.values(results).filter(function(r){return !r.skipped;}).length;
   var fast=activeSteps.filter(function(_,i){return results[i]&&!results[i].skipped&&results[i].min<=activeSteps[i].est;}).length;
@@ -3311,6 +3339,99 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});
 }
 try{catLoad();}catch(e){}
+/* ══ 음성 안내 ══ */
+var VOICE_KEY='dt_voice';
+var voiceCfg=(function(){var d={on:1,every:10,rate:1,chime:1};try{var r=JSON.parse(localStorage.getItem(VOICE_KEY)||'{}');
+  if(r&&typeof r==='object'){if(r.on===0||r.on===1)d.on=r.on;if([0,5,10,15].indexOf(r.every)>=0)d.every=r.every;if([0.9,1,1.15].indexOf(r.rate)>=0)d.rate=r.rate;if(r.chime===0||r.chime===1)d.chime=r.chime;}}catch(e){}return d;})();
+var voiceOK=('speechSynthesis' in window)&&typeof SpeechSynthesisUtterance!=='undefined';
+var voiceKo=null, voiceAudio=null, voiceSrc={}, vState={step:-1,said1:false,saidOver:false,overMark:0,lastPer:0,book:{}};
+function voiceSave(){try{localStorage.setItem(VOICE_KEY,JSON.stringify(voiceCfg));}catch(e){}}
+function voicePick(){if(!voiceOK)return;var vs=speechSynthesis.getVoices()||[];voiceKo=vs.find(function(v){return /^ko/i.test(v.lang)&&v.localService;})||vs.find(function(v){return /^ko/i.test(v.lang);})||null;}
+if(voiceOK){voicePick();try{speechSynthesis.addEventListener('voiceschanged',voicePick);}catch(e){}}
+/* 짧은 알림음 + 무음 꼬리(5초 미만 재생 → 음악 앱 볼륨을 잠깐 낮추는 용도) */
+function voiceWav(chime){
+  var sr=8000,len=Math.floor(sr*4.4),buf=new Uint8Array(44+len),dv=new DataView(buf.buffer);
+  function str(o,t){for(var i=0;i<t.length;i++)buf[o+i]=t.charCodeAt(i);}
+  str(0,'RIFF');dv.setUint32(4,36+len,true);str(8,'WAVE');str(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+  dv.setUint32(24,sr,true);dv.setUint32(28,sr,true);dv.setUint16(32,1,true);dv.setUint16(34,8,true);str(36,'data');dv.setUint32(40,len,true);
+  for(var i=0;i<len;i++){var t=i/sr,v=0;
+    if(chime){if(t<0.16)v=Math.sin(2*Math.PI*880*t)*(1-t/0.16);else if(t<0.42)v=Math.sin(2*Math.PI*1320*t)*(1-(t-0.16)/0.26);}
+    buf[44+i]=128+Math.round(v*60);}
+  var b='';for(var j=0;j<buf.length;j++)b+=String.fromCharCode(buf[j]);return 'data:audio/wav;base64,'+btoa(b);
+}
+function voiceUnlock(){ /* 사용자 터치 시점에 호출: 이후 자동 안내 허용 */
+  if(!voiceOK)return;
+  try{if(!voiceAudio){voiceAudio=new Audio();voiceAudio.preload='auto';}}catch(e){}
+  try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}catch(e){}
+}
+function voiceSay(text,force){
+  if(!voiceOK||!text)return;
+  if(!voiceCfg.on&&!force)return;
+  try{speechSynthesis.cancel();}catch(e){}
+  var done=false;
+  var go=function(){if(done)return;done=true;
+    var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';if(voiceKo)u.voice=voiceKo;u.rate=voiceCfg.rate;u.pitch=1;u.volume=1;
+    try{speechSynthesis.speak(u);}catch(e){}
+  };
+  try{
+    if(!voiceAudio)voiceAudio=new Audio();
+    var k=voiceCfg.chime?'c':'s';if(!voiceSrc[k])voiceSrc[k]=voiceWav(!!voiceCfg.chime);
+    voiceAudio.src=voiceSrc[k];
+    var p=voiceAudio.play();
+    if(p&&p.then){p.then(function(){setTimeout(go,voiceCfg.chime?450:150);},go);}else setTimeout(go,300);
+    setTimeout(go,1200);
+  }catch(e){go();}
+}
+function spokenMin(m){m=Math.max(0,Math.round(m));var h=Math.floor(m/60),mm=m%60;
+  if(h&&mm)return h+'시간 '+mm+'분';if(h)return h+'시간';return mm+'분';}
+function spokenClock(d){var h=d.getHours(),m=d.getMinutes();var ap=h<12?'오전':'오후';var hh=h%12;if(hh===0)hh=12;return ap+' '+hh+'시'+(m?' '+m+'분':'');}
+function spokenRatio(s){try{var p=s.productId?products.find(function(x){return x.id===s.productId;}):null;var d=p?dilCalc(p.id):null;return d&&d.ratio?'희석비 1대 '+d.ratio+'. ':'';}catch(e){return '';}}
+function voiceStep(prefix){
+  vState.step=cur;vState.said1=false;vState.saidOver=false;vState.overMark=0;
+  var s=activeSteps[cur];if(!s)return;
+  var t=(prefix||'')+(cur+1)+'단계, '+s.name+'. 예상 '+spokenMin(s.est)+'. '+spokenRatio(s);
+  if(cur===activeSteps.length-1)t+='마지막 단계입니다.';
+  voiceSay(t);
+}
+function voiceTick(now,stepElSec,remMin,projDate){
+  if(!voiceOK||!voiceCfg.on||!sessStart||isPaused)return;
+  var s=activeSteps[cur];if(!s)return;
+  if(vState.step!==cur){vState.step=cur;vState.said1=false;vState.saidOver=false;vState.overMark=0;}
+  var estSec=s.est*60;
+  /* 세차장 예약 종료 알림 (실제 시각 기준) */
+  if(bookMin>0){
+    var endT=sessStart.getTime()+bookMin*60000,leftSec=Math.floor((endT-now.getTime())/1000);
+    var marks=[30,15,5];
+    for(var i=0;i<marks.length;i++){var k=marks[i];
+      if(bookMin>k&&!vState.book[k]&&leftSec<=k*60&&leftSec>k*60-90){vState.book[k]=1;
+        voiceSay('세차장 예약 종료 '+k+'분 전입니다.'+(projDate.getTime()>endT?' 남은 코스를 마치기에는 시간이 부족해요.':''));return;}}
+    if(leftSec<=0&&leftSec>-90&&!vState.book.end){vState.book.end=1;voiceSay('세차장 예약 시간이 끝났습니다.');return;}
+  }
+  if(s.est>=3&&!vState.said1&&stepElSec>=estSec-60&&stepElSec<estSec-55){vState.said1=true;voiceSay(s.name+', 예상 시간 1분 남았습니다.');return;}
+  if(!vState.saidOver&&stepElSec>=estSec&&stepElSec<estSec+5){vState.saidOver=true;voiceSay(s.name+', 예상 시간이 되었습니다.');return;}
+  if(stepElSec>estSec){var over=Math.floor((stepElSec-estSec)/60);
+    if(over>0&&over%5===0&&over!==vState.overMark){vState.overMark=over;voiceSay(s.name+', 예상보다 '+spokenMin(over)+' 지났습니다.');return;}}
+  if(voiceCfg.every>0){
+    var elMin=Math.floor((now-sessStart)/60000);
+    if(elMin>0&&elMin%voiceCfg.every===0&&vState.lastPer!==elMin){
+      vState.lastPer=elMin;
+      voiceSay('현재 '+(cur+1)+'단계 '+s.name+', '+spokenMin(Math.floor(stepElSec/60))+' 진행 중. 남은 코스 '+spokenMin(remMin)+', 예상 종료 '+spokenClock(projDate)+'.');
+    }
+  }
+}
+function voiceRenderUI(){
+  var b=document.getElementById('btn-voice');
+  if(b){b.style.display=voiceOK?'':'none';b.textContent=voiceCfg.on?'🔊':'🔇';b.className='btn-voice'+(voiceCfg.on?'':' off');}
+  document.querySelectorAll('#voice-box .vo-seg').forEach(function(g){var k=g.getAttribute('data-k');
+    g.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',String(voiceCfg[k])===x.getAttribute('data-v'));});});
+  if(!voiceOK){var n=document.getElementById('vo-note');if(n)n.textContent='이 기기(브라우저)에서는 음성 안내를 지원하지 않아요.';}
+}
+function voiceToggle(){voiceCfg.on=voiceCfg.on?0:1;voiceSave();voiceRenderUI();if(voiceCfg.on){voiceUnlock();voiceSay('음성 안내를 켰습니다.');}else{try{speechSynthesis.cancel();}catch(e){}}}
+function voicePreview(){voiceUnlock();voiceSay('3단계, 휠 타이어 세척. 예상 20분. 희석비 1대 5. 남은 코스 1시간 50분, 예상 종료 '+spokenClock(new Date(Date.now()+110*60000))+'.',true);}
+(function(){var box=document.getElementById('voice-box');if(!box)return;
+  box.addEventListener('click',function(e){var b=e.target.closest('.vo-seg button');if(!b)return;var k=b.parentNode.getAttribute('data-k');
+    voiceCfg[k]=parseFloat(b.getAttribute('data-v'));voiceSave();voiceRenderUI();});
+  voiceRenderUI();})();
 /* 문의·의견 보내기 */
 (function(){
   var box=document.getElementById('fb-types');if(!box)return;
@@ -3332,7 +3453,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.1', APP_BUILD='20261114.7';
+var APP_VER='1.0.2', APP_BUILD='20261116.1';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
