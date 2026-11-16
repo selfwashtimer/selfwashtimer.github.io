@@ -3451,7 +3451,9 @@ function voiceEls(){
 function voiceDuckStop(seq){
   if(seq!==undefined&&seq!==voiceSeq)return;
   voiceSpeaking=false;clearTimeout(voiceDuckTimer);voiceDuckTimer=null;
-  try{if(voiceDuck)voiceDuck.pause();}catch(e){}
+  /* pause()만 하면 기기가 '일시정지된 재생'으로 보고 음악 볼륨을 계속 낮춰 둘 수 있음
+     → 소리 자체를 비워서(load) 재생기를 없애야 음악 볼륨이 원래대로 돌아옴 */
+  try{if(voiceDuck){voiceDuck.pause();voiceDuck.removeAttribute('src');voiceDuck.load();}}catch(e){}
 }
 function voiceSay(text,force){
   if(!voiceOK||!text)return;
@@ -3546,7 +3548,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.6', APP_BUILD='20261116.5';
+var APP_VER='1.0.7', APP_BUILD='20261116.6';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
