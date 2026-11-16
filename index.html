@@ -210,7 +210,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .ci-tile-cmp.on .ci-tile-name{color:#fff;}
 .ci-tile:disabled{opacity:.45;cursor:default;}
 .ci-area{display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
-.cmp-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cmp-pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
+.cmp-sel{min-width:0;}
+@media (max-width:340px){.cmp-pick{grid-template-columns:minmax(0,1fr);}}
 .cmp-sel{display:flex;align-items:center;gap:6px;background:var(--s1);border:1.5px solid var(--b2);border-radius:10px;padding:6px 8px;}
 .cmp-sel select{flex:1;min-width:0;border:none;background:transparent;font-size:13px;font-weight:700;font-family:inherit;color:var(--tx);}
 .cmp-tag{flex-shrink:0;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
@@ -283,10 +285,16 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .cd-empty{font-size:12px;color:var(--tx3);font-family:var(--mono);padding:14px;text-align:center;}
 
 /* 예약 시간 */
-.bs-chips{display:grid;grid-template-columns:repeat(3,auto);gap:5px;justify-content:start;margin-bottom:8px;}
-@media(min-width:600px){
-  .bs-chips{display:flex;flex-wrap:nowrap;gap:5px;}
-  .bs-chip{flex:1;}
+.bs-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:8px;min-width:0;}
+@container (min-width:480px){.bs-chips{grid-template-columns:repeat(5,minmax(0,1fr));}}
+@container (min-width:690px){.bs-chips{grid-template-columns:repeat(9,minmax(0,1fr));}}
+.bs-chip{min-width:0;padding:0 4px;}
+.book-sec{container-type:inline-size;}
+#book-row{flex-wrap:wrap;}
+#book-row>.bs-chips{flex:1 1 200px!important;}
+@container (max-width:430px){
+  #book-ctrl{flex-direction:row!important;width:100%;min-width:0!important;}
+  #book-ctrl>*{flex:1;width:auto!important;}
 }
 .bs-chip{height:32px;padding:0 11px;border-radius:16px;background:var(--s2);border:1.5px solid var(--b2);font-size:13px;font-weight:600;color:var(--tx2);cursor:pointer;}
 .bs-chip.sel{background:var(--acc2);border-color:var(--acc);color:var(--acc);}
@@ -316,7 +324,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .prev-est{font-size:12px;color:var(--tx3);font-family:var(--mono);margin-left:auto;}
 
 /* CTA */
-.setup-cta{position:fixed;bottom:60px;left:0;right:0;padding:10px 16px 12px;background:linear-gradient(transparent,var(--bg) 30%);display:flex;flex-direction:column;align-items:center;gap:6px;}
+.setup-cta{position:fixed;bottom:60px;left:0;right:0;padding:16px 16px 12px;background:linear-gradient(transparent,var(--bg) 14px);display:flex;flex-direction:column;align-items:center;gap:6px;}
 .cta-info{font-size:12px;font-family:var(--mono);color:var(--tx3);text-align:center;}
 .cta-info .hi{color:var(--tx2);font-weight:700;}
 .cta-info .ok{color:var(--grn);}
@@ -340,9 +348,6 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
   .ah-row1>div:last-child{gap:6px!important;}
   .btn-cfg,.btn-end{padding:5px 8px;}
   .btn-pause-s{font-size:12px;gap:2px;}
-  #book-row{flex-wrap:wrap;}
-  #book-ctrl{flex-direction:row!important;width:100%;min-width:0!important;}
-  #book-ctrl>*{flex:1;}
 }
 .ah-loc{font-family:var(--mono);font-size:11px;color:var(--tx3);background:var(--s3);border:1px solid var(--b1);border-radius:4px;padding:2px 7px;}
 .hd-clock{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--acc);}
@@ -357,6 +362,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .ah-stat-val.tight{color:var(--ora);}
 .ah-stat-val.over{color:var(--red);}
 .hd-clock-wrap{display:flex;align-items:baseline;gap:6px;}
+@media (max-width:340px){.hd-clock-lbl{display:none;}}
 .hd-clock-lbl{font-size:11px;font-weight:600;color:var(--tx3);white-space:nowrap;}
 @media (max-width:560px){
   .ah-row2{display:grid;grid-template-columns:repeat(3,1fr);}
@@ -695,7 +701,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .rt-progress.paused{color:var(--ora);}
 
 /* 홈 액션 선택 모달 */
-.home-modal-box{background:var(--s1);border-radius:20px 20px 0 0;padding:20px 18px 36px;width:100%;max-width:500px;}
+.home-modal-box{background:var(--s1);border-radius:20px 20px 0 0;padding:20px 18px 36px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;}
 .home-modal-title{font-size:16px;font-weight:700;margin-bottom:4px;}
 .home-modal-sub{font-size:12px;color:var(--tx2);margin-bottom:16px;font-family:var(--mono);}
 .home-action-btn{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--b2);background:var(--s1);cursor:pointer;text-align:left;font-family:var(--sans);display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:background .12s;}
@@ -3577,6 +3583,7 @@ var VOICE_KEY='dt_voice';
 var voiceCfg=(function(){var d={on:1,every:10,rate:1,chime:1};try{var r=JSON.parse(localStorage.getItem(VOICE_KEY)||'{}');
   if(r&&typeof r==='object'){if(r.on===0||r.on===1)d.on=r.on;if([0,5,10,15].indexOf(r.every)>=0)d.every=r.every;if([0.9,1,1.15].indexOf(r.rate)>=0)d.rate=r.rate;if(r.chime===0||r.chime===1)d.chime=r.chime;}}catch(e){}return d;})();
 var voiceOK=('speechSynthesis' in window)&&typeof SpeechSynthesisUtterance!=='undefined';
+var voiceIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 var voiceKo=null, voiceSrc={}, vState={step:-1,said1:false,saidOver:false,overMark:0,lastPer:0,book:{}};
 function voiceSave(){try{localStorage.setItem(VOICE_KEY,JSON.stringify(voiceCfg));}catch(e){}}
 function voicePick(){if(!voiceOK)return;var vs=speechSynthesis.getVoices()||[];voiceKo=vs.find(function(v){return /^ko/i.test(v.lang)&&v.localService;})||vs.find(function(v){return /^ko/i.test(v.lang);})||null;}
@@ -3595,8 +3602,10 @@ function voiceWav(chime,sec){
 function voiceUnlock(){ /* 사용자 터치 시점에 호출: 이후 자동 안내 허용 */
   if(!voiceOK)return;
   voiceEls();
-  try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}catch(e){}
+  if(voiceIOS&&voiceUnlocked)return;
+  try{var u=new SpeechSynthesisUtterance(voiceIOS?'.':' ');u.volume=0;u.lang='ko-KR';speechSynthesis.speak(u);voiceUnlocked=true;}catch(e){}
 }
+var voiceUnlocked=false;
 /* 안내 중 음악 볼륨 낮추기: 5초 미만 소리(알림음+무음 4.4초)를 재생하고,
    안내가 길면 끝날 때까지 무음 4.4초를 이어서 다시 재생 (v1.0.4에서 효과가 확인된 방식) */
 var voiceDuck=null, voiceDuckTimer=null, voiceSeq=0, voiceSpeaking=false;
@@ -3615,9 +3624,26 @@ function voiceDuckStop(seq){
      → 소리 자체를 비워서(load) 재생기를 없애야 음악 볼륨이 원래대로 돌아옴 */
   try{if(voiceDuck){voiceDuck.pause();voiceDuck.removeAttribute('src');voiceDuck.load();}}catch(e){}
 }
+/* 아이폰(iOS): 음성 안내가 스스로 다른 소리를 줄여 주므로 무음 재생 방식은 쓰지 않음.
+   소리 재생 중에 말하기를 시작하면 말이 끊기거나 무시될 수 있어, 알림음이 끝난 뒤 재생기를 비우고 말함.
+   '미리 듣기'처럼 직접 누른 경우에는 누른 순간 바로 말해야 아이폰이 허용함. */
+function voiceSayIOS(text,force){
+  var seq=++voiceSeq;voiceSpeaking=false;
+  var speak=function(){if(seq!==voiceSeq)return;
+    try{if(voiceDuck){voiceDuck.pause();voiceDuck.removeAttribute('src');voiceDuck.load();}}catch(e){}
+    try{if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();}catch(e){}
+    var u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';if(voiceKo)u.voice=voiceKo;u.rate=voiceCfg.rate;u.pitch=1;u.volume=1;
+    try{speechSynthesis.speak(u);}catch(e){}
+  };
+  if(force||!voiceCfg.chime){speak();return;}
+  try{voiceEls();if(!voiceSrc.i)voiceSrc.i=voiceWav(true,0.5);voiceDuck.src=voiceSrc.i;var p=voiceDuck.play();
+    if(p&&p.catch)p.catch(function(){});}catch(e){}
+  setTimeout(speak,600);
+}
 function voiceSay(text,force){
   if(!voiceOK||!text)return;
   if(!voiceCfg.on&&!force)return;
+  if(voiceIOS){voiceSayIOS(text,force);return;}
   try{speechSynthesis.cancel();}catch(e){}
   var seq=++voiceSeq, done=false;
   voiceEls();voiceSpeaking=true;
@@ -3682,7 +3708,7 @@ function voiceRenderUI(){
   if(!voiceOK){var n=document.getElementById('vo-note');if(n)n.textContent='이 기기(브라우저)에서는 음성 안내를 지원하지 않아요.';}
 }
 function voiceToggle(){voiceCfg.on=voiceCfg.on?0:1;voiceSave();voiceRenderUI();if(voiceCfg.on){voiceUnlock();voiceSay('음성 안내를 켰습니다.');}else{try{speechSynthesis.cancel();}catch(e){}voiceDuckStop();}}
-function voicePreview(){voiceUnlock();voiceSay('3단계, 휠 타이어 세척. 예상 20분. 희석비 1대 5. 남은 코스 1시간 50분, 예상 종료 '+spokenClock(new Date(Date.now()+110*60000))+'.',true);}
+function voicePreview(){if(voiceIOS)voiceUnlocked=true;else voiceUnlock();voiceSay('3단계, 휠 타이어 세척. 예상 20분. 희석비 1대 5. 남은 코스 1시간 50분, 예상 종료 '+spokenClock(new Date(Date.now()+110*60000))+'.',true);}
 (function(){var box=document.getElementById('voice-box');if(!box)return;
   box.addEventListener('click',function(e){var b=e.target.closest('.vo-seg button');if(!b)return;var k=b.parentNode.getAttribute('data-k');
     voiceCfg[k]=parseFloat(b.getAttribute('data-v'));voiceSave();voiceRenderUI();});
@@ -3708,7 +3734,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.12', APP_BUILD='20261116.12';
+var APP_VER='1.0.14', APP_BUILD='20261117.14';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
