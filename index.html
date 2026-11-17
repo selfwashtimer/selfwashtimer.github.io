@@ -1173,7 +1173,7 @@ svg{display:block;}
       <div class="vo-row"><span class="vo-lbl">알림</span><div class="vo-seg" id="noti-seg"><button type="button" data-v="1">켜기</button><button type="button" data-v="0">끄기</button></div></div>
       <div class="io-desc vo-note" id="noti-st"></div>
       <div class="io-actions"><button class="btn-sec" onclick="notiTest()">테스트 알림 보내기</button></div>
-      <div class="io-desc vo-note">워치에 안 뜨면: 갤럭시 웨어러블 앱 › 워치 설정 › 알림에서 이 앱을 띄우는 브라우저(삼성 인터넷·크롬)를 켜고, '휴대전화 사용 중에도 알림 받기' 같은 옵션이 있으면 켜 주세요.</div>
+      <div class="io-desc vo-note">워치에 안 뜨면: 갤럭시 웨어러블 앱 › 앱 알림에서 이 앱을 켜고(또는 '폰 앱 모두 허용'), '두 기기에서 함께 알림 받기'로 설정해 주세요.</div>
     </div>
 
     <div class="io-box">
@@ -1518,7 +1518,7 @@ function saveDilSettings(){ss(K_DIL,dilSettings);}
 function midLevel(levels){return Math.max(0,Math.floor(((levels||[]).length-1)/2));}
 function pad(n){return String(n).padStart(2,'0');}
 function toHHMM(d){return pad(d.getHours())+':'+pad(d.getMinutes());}
-function toMMSS(s){return pad(Math.floor(s/60))+':'+pad(s%60);}
+function toMMSS(s){if(s>=3600)return Math.floor(s/3600)+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60);return pad(Math.floor(s/60))+':'+pad(s%60);}
 function toHM(m){var h=Math.floor(m/60),mn=m%60;return h?(h+'h '+mn+'m'):(mn+'m');}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function makeEl(tag,cls,html){var el=document.createElement(tag);if(cls)el.className=cls;if(html!==undefined)el.innerHTML=html;return el;}
@@ -2390,7 +2390,7 @@ function renderSteps(){
     if(res&&!res.skipped){
       doneT=res.doneStr;actT=res.min+'분';
       var d=res.min-s.est;
-      deltaT=d<=0?('▲ '+Math.abs(d)+'분 빠름'):('▼ '+d+'분 초과');
+      deltaT=d===0?'✓ 예상대로':d<0?('▲ '+Math.abs(d)+'분 빠름'):('▼ '+d+'분 초과');
       deltaC=d<=0?'fast':'slow';
     }
     var calcAmt=dilAmtText(s.id);
@@ -2493,7 +2493,7 @@ function renderSetupLogPanel(){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d<=0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteSetupHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
@@ -2508,7 +2508,7 @@ function renderLogPanel(){
   history.forEach(function(rec){
     var entry=document.createElement('div');entry.className='log-entry';
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d<=0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
@@ -2524,7 +2524,7 @@ function renderLogPanel(){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d<=0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
@@ -3737,7 +3737,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.15', APP_BUILD='20261117.15';
+var APP_VER='1.0.16', APP_BUILD='20261117.16';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
