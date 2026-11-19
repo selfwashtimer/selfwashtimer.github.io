@@ -380,6 +380,9 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .ah-logo{min-width:0;}
 @media (max-width:600px){.ah-logo-txt{display:none;}}
 .ah-stat-sub{font-size:10.5px;color:var(--tx3);white-space:nowrap;margin-top:1px;}
+.ah-stat-sub.clk{font-size:12px;font-weight:700;color:var(--blue);}
+.ah-stat-sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.ah-stat-sub.over{color:var(--red);font-weight:700;}
 .ah-stat-sub.up{color:var(--grn);font-weight:700;}
 .ah-stat-sub.down{color:var(--ora);font-weight:700;}
 .ah-stat-val{font-family:var(--sans)!important;}
@@ -588,6 +591,8 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .dstat{background:var(--s1);border:1px solid var(--b2);border-radius:var(--rl);padding:11px 14px;text-align:center;min-width:90px;box-shadow:var(--shadow);}
 .ds-l{font-size:11px;color:var(--tx3);margin-bottom:3px;}
 .ds-v{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--acc);}
+.log-pause{font-size:11px;font-weight:400;color:var(--tx3);}
+.ds-s{font-size:10.5px;color:var(--tx3);margin-top:2px;}
 .btn-ok{height:44px;padding:0 28px;background:var(--accbtn);color:#fff;border:none;border-radius:22px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;}
 
 /* ════ CUSTOMIZE PANEL ════ */
@@ -1000,10 +1005,10 @@ svg{display:block;}
         </div>
       </div>
       <div class="ah-row2" id="ah-row2" style="display:none;">
-        <div class="ah-stat"><div class="ah-stat-lbl">예약 시간</div><div class="ah-stat-val" id="ah-book">—</div><div class="ah-stat-sub" id="ah-book-s"></div></div>
-        <div class="ah-stat"><div class="ah-stat-lbl">지난 시간</div><div class="ah-stat-val ac" id="ah-elapsed">0분</div><div class="ah-stat-sub">일시정지 제외</div></div>
+        <div class="ah-stat"><div class="ah-stat-lbl">예약 시간</div><div class="ah-stat-val" id="ah-book">—</div><div class="ah-stat-sub clk" id="ah-book-s"></div></div>
+        <div class="ah-stat"><div class="ah-stat-lbl">지난 시간</div><div class="ah-stat-val ac" id="ah-elapsed">0분</div><div class="ah-stat-sub" id="ah-elapsed-s"></div></div>
         <div class="ah-stat"><div class="ah-stat-lbl">진행</div><div class="ah-stat-val" id="bsdone">0/0</div><div class="ah-stat-sub">단계</div></div>
-        <div class="ah-stat"><div class="ah-stat-lbl">전체 예상</div><div class="ah-stat-val" id="ah-total-est">—</div><div class="ah-stat-sub">처음 계획</div></div>
+        <div class="ah-stat"><div class="ah-stat-lbl">전체 예상</div><div class="ah-stat-val" id="ah-total-est">—</div><div class="ah-stat-sub" id="ah-total-s" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;"></div></div>
         <div class="ah-stat"><div class="ah-stat-lbl">남은 시간</div><div class="ah-stat-val" id="ah-remain">—</div><div class="ah-stat-sub" id="ah-remain-s"></div></div>
         <div class="ah-stat proj-col"><div class="ah-stat-lbl">끝나는 시각</div><div class="ah-stat-val" id="ah-proj">—</div><div class="ah-stat-sub" id="ah-proj-s"></div></div>
         <div style="display:none" id="bsel"></div>
@@ -1246,7 +1251,7 @@ svg{display:block;}
       <li>아래 요약줄에서 단계 수·예약·예상 시간·여유를 확인하고 <b>세차 시작</b>을 누르면 타이머로 넘어가요.</li>
     </ul></div></details>
     <details class="help-sec"><summary>⏱ 세차타이머</summary><div class="help-body"><ul>
-      <li><b>상단 현황</b> — 윗줄은 지금까지(예약 시간·지난 시간·진행), 아랫줄은 앞으로(전체 예상·남은 시간·끝나는 시각)예요. 걸리는 시간은 '2시간 25분'처럼, 시계 시각은 파란 칸에 '오전 12:27'처럼 보여 줘요. 앞 단계를 빨리 끝내면 '▲ 13분 앞당겨짐'처럼 끝나는 시각의 변화도 알려 줘요.</li>
+      <li><b>상단 현황</b> — 윗줄은 지금까지(예약 시간·지난 시간·진행), 아랫줄은 앞으로(전체 예상·남은 시간·끝나는 시각)예요. 지난 시간은 세차장 대여 시간 기준이라 일시정지한 시간도 포함하고, 아래에 실제 세차한 시간을 함께 보여 줘요. 걸리는 시간은 '2시간 25분'처럼, 시계 시각은 파란 칸에 '오전 12:27'처럼 보여 줘요. 예약 시간을 넣었다면 끝나는 시각 아래에 '대여 끝 25분 전'처럼 대여 시간 안에 끝나는지를 알려 줘요.</li>
       <li><b>진행</b> — 현재 단계의 경과 시간과 포인트, 다음 단계를 보여줘요. <b>완료</b>로 다음 단계, <b>스킵</b>으로 건너뛰기, <b>↶</b>로 이전 단계, <b>일시정지</b>로 잠시 멈출 수 있어요.</li>
       <li><b>희석 · 코스 · 기록</b> — 세차 중에도 희석량, 진행 코스의 전체 단계, 끝낸 세차의 단계별 소요 시간을 볼 수 있어요.</li>
       <li><b>🏠 홈</b>은 일시정지 후 세차설정으로, <b>⏹ 종료</b>는 세차를 끝내요. 앱을 닫았다가 다시 열어도 진행 중인 세차를 이어서 할 수 있어요.</li>
@@ -1542,6 +1547,7 @@ function saveDilSettings(){ss(K_DIL,dilSettings);}
 function midLevel(levels){return Math.max(0,Math.floor(((levels||[]).length-1)/2));}
 function pad(n){return String(n).padStart(2,'0');}
 function toHHMM(d){return pad(d.getHours())+':'+pad(d.getMinutes());}
+function courseKw(c){var n=(c.name||'').trim();if(n.length>8)n=n.split(/\s+/)[0];return (c.icon?c.icon+' ':'')+n;}
 function kDur(m){m=Math.max(0,Math.round(m));if(m<60)return m+'분';var h=Math.floor(m/60),r=m%60;return h+'시간'+(r?' '+r+'분':'');}
 function kClock(d){var h=d.getHours(),ap=h<12?'오전':'오후';return ap+' '+(h%12||12)+':'+pad(d.getMinutes());}
 function toMMSS(s){if(s>=3600)return Math.floor(s/3600)+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60);return pad(Math.floor(s/60))+':'+pad(s%60);}
@@ -2333,10 +2339,10 @@ function togglePause(){
 }
 
 function tickGlobal(){
-  if(isPaused)return;
   var now=new Date();
   var pausedMs=totalPaused+(isPaused&&pauseStart?(now-pauseStart):0);
-  var elSec=Math.max(0,Math.floor((now-sessStart-sessPaused-pausedMs)/1000));
+  var elSec=Math.max(0,Math.floor((now-sessStart)/1000)); /* 세차장 이용 시간 기준: 일시정지 포함 */
+  var pauseAllMin=Math.round((sessPaused+pausedMs)/60000);
   document.getElementById('hdclock').textContent=kClock(now);
   document.getElementById('bsnow').textContent=toHHMM(now);
 
@@ -2360,14 +2366,22 @@ function tickGlobal(){
 
   var totalEst=activeSteps.reduce(function(a,s){return a+s.est;},0);
   document.getElementById('ah-elapsed').textContent=kDur(Math.floor(elSec/60));
+  var es=document.getElementById('ah-elapsed-s');es.textContent=pauseAllMin>0?('실세차 '+kDur(Math.floor(elSec/60)-pauseAllMin)+' · 정지 '+kDur(pauseAllMin)):(kClock(sessStart)+' 시작');
+  var cc=courses.find(function(x){return x.id===selCourse;});document.getElementById('ah-total-s').textContent=cc?courseKw(cc):'';
   document.getElementById('ah-remain').textContent=kDur(Math.round(remMin));
   document.getElementById('ah-remain-s').textContent='남은 '+remSteps+'단계';
   document.getElementById('ah-total-est').textContent=kDur(totalEst);
   var ahProjEl=document.getElementById('ah-proj');if(ahProjEl)ahProjEl.textContent=kClock(projDate);
   var planEnd=new Date(sessStart.getTime()+sessPaused+pausedMs+totalEst*60000);
   var dMin=Math.round((planEnd-projDate)/60000),ps=document.getElementById('ah-proj-s');
-  ps.textContent=dMin>0?('▲ '+kDur(dMin)+' 앞당겨짐'):dMin<0?('▼ '+kDur(-dMin)+' 늦어짐'):'계획대로';
-  ps.className='ah-stat-sub'+(dMin>0?' up':dMin<0?' down':'');
+  if(bookMin>0){
+    var bm=Math.round((sessStart.getTime()+bookMin*60000-projDate.getTime())/60000);
+    ps.textContent=bm>=0?('대여 끝 '+kDur(bm)+' 전'):('대여 '+kDur(-bm)+' 초과');
+    ps.className='ah-stat-sub'+(bm>=15?' up':bm>=0?' down':' over');
+  } else {
+    ps.textContent=dMin>0?('▲ '+kDur(dMin)+' 앞당겨짐'):dMin<0?('▼ '+kDur(-dMin)+' 늦어짐'):'계획대로';
+    ps.className='ah-stat-sub'+(dMin>0?' up':dMin<0?' down':'');
+  }
 
   var bookEl=document.getElementById('ah-book');
   if(bookMin>0){
@@ -2381,8 +2395,7 @@ function tickGlobal(){
   } else {
     bookEl.textContent='미설정';
   }
-  voiceTick(now,stepElSec,remMin,projDate);
-  try{notiLive(now,stepElSec,remMin,projDate);}catch(e){}
+  if(!isPaused){voiceTick(now,stepElSec,remMin,projDate);try{notiLive(now,stepElSec,remMin,projDate);}catch(e){}}
 }
 
 /* ══ STEP ACTIONS ══ */
@@ -2537,7 +2550,7 @@ function saveHistory(early){
   var totalSec=Math.floor((new Date()-sessStart)/1000);
   var totalMin=Math.round(totalSec/60);
   var c=courses.find(function(x){return x.id===selCourse;});
-  var record={id:sessStart.getTime(),date:sessStart.toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}),startTime:toHHMM(sessStart),endTime:toHHMM(new Date()),courseName:c?c.name:'커스텀',courseIcon:c?c.icon:'🚗',endedEarly:!!early,doneCount:Object.keys(results).length,totalMin:totalMin,estMin:activeSteps.reduce(function(a,s){return a+s.est;},0),bookMin:bookMin,steps:activeSteps.map(function(s,i){var r=results[i];return{name:s.name,est:s.est,skipped:r&&r.skipped,actual:r&&!r.skipped?r.min:null};})};
+  var record={id:sessStart.getTime(),date:sessStart.toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}),startTime:toHHMM(sessStart),endTime:toHHMM(new Date()),courseName:c?c.name:'커스텀',courseIcon:c?c.icon:'🚗',endedEarly:!!early,pauseMin:Math.round((sessPaused+totalPaused)/60000),doneCount:Object.keys(results).length,totalMin:totalMin,estMin:activeSteps.reduce(function(a,s){return a+s.est;},0),bookMin:bookMin,steps:activeSteps.map(function(s,i){var r=results[i];return{name:s.name,est:s.est,skipped:r&&r.skipped,actual:r&&!r.skipped?r.min:null};})};
   var history=ls(K_HISTORY,[]);history.unshift(record);if(history.length>50)history=history.slice(0,50);
   ss(K_HISTORY,history);
 }
@@ -2553,7 +2566,7 @@ function renderSetupLogPanel(){
   history.forEach(function(rec){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
-    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
+    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
       +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteSetupHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
@@ -2568,7 +2581,7 @@ function renderLogPanel(){
   if(!history.length){panel.innerHTML='<div class="log-empty"><div style="font-size:36px">🚗</div><div style="font-size:14px;font-family:var(--mono)">아직 기록이 없어요</div></div>';return;}
   history.forEach(function(rec){
     var entry=document.createElement('div');entry.className='log-entry';
-    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
+    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
       +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
@@ -2584,7 +2597,7 @@ function renderLogPanel(){
   history.forEach(function(rec){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
-    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+toHM(rec.totalMin)+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
+    entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
       +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
       +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
@@ -2599,11 +2612,13 @@ var pendingTimeUpdate=null;
 function showDone(early){
   var totalSec=Math.floor((new Date()-sessStart)/1000);
   var totalMin=Math.round(totalSec/60);
+  var pauseMin=Math.round((sessPaused+totalPaused+(isPaused&&pauseStart?(new Date()-pauseStart):0))/60000);
+  var washMin=Math.max(0,totalMin-pauseMin);
   annSay(early?'세차를 종료했습니다. 총 '+spokenMin(totalMin)+' 진행했습니다.':'모든 단계를 마쳤습니다. 총 '+spokenMin(totalMin)+' 걸렸습니다. 수고하셨습니다.',true);
   var tot=activeSteps.reduce(function(a,s){return a+s.est;},0);
   var comp=Object.values(results).filter(function(r){return !r.skipped;}).length;
   var fast=activeSteps.filter(function(_,i){return results[i]&&!results[i].skipped&&results[i].min<=activeSteps[i].est;}).length;
-  var diff=totalMin<=tot?'⚡ '+(tot-totalMin)+'분 단축':'+'+(totalMin-tot)+'분';
+  var diff=washMin<=tot?'⚡ '+kDur(tot-washMin)+' 단축':'+'+kDur(washMin-tot);
   var handled=Object.keys(results).length;
   saveHistory(!!early);
   clearSession();
@@ -2612,7 +2627,7 @@ function showDone(early){
   updateTimerTabBadge();
   document.getElementById('done-title').textContent=early?'세차 종료':'세차 완료! 🎉';
   document.getElementById('done-icon').textContent=early?'⏹':'✓';
-  var h='<div class="dstat"><div class="ds-l">총 소요</div><div class="ds-v">'+kDur(totalMin)+'</div></div>'
+  var h='<div class="dstat"><div class="ds-l">총 소요</div><div class="ds-v">'+kDur(totalMin)+'</div>'+(pauseMin>0?'<div class="ds-s">실세차 '+kDur(washMin)+' · 정지 '+kDur(pauseMin)+'</div>':'')+'</div>'
     +(early?'<div class="dstat"><div class="ds-l">진행 단계</div><div class="ds-v">'+handled+'/'+activeSteps.length+'</div></div>'
            :'<div class="dstat"><div class="ds-l">예상 대비</div><div class="ds-v">'+diff+'</div></div>')
     +'<div class="dstat"><div class="ds-l">예정 내 완료</div><div class="ds-v">'+fast+'/'+comp+'</div></div>';
@@ -3818,7 +3833,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.21', APP_BUILD='20261119.21';
+var APP_VER='1.0.22', APP_BUILD='20261119.22';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
