@@ -2027,7 +2027,7 @@ function openCourseInfo(cid){
 /* ══ APP STATE ══ */
 var activeSteps=[], cur=0, sessStart=null, stepStart=null, results={};
 var stepIv=null, globalIv=null, stepSec=0;
-var isPaused=false, pauseStart=null, totalPaused=0;
+var isPaused=false, pauseStart=null, totalPaused=0, sessPaused=0; /* totalPaused: 현재 단계의 일시정지 누적, sessPaused: 지난 단계들의 일시정지 누적 */
 
 /* ══ SESSION SAVE / RESTORE ══ */
 var K_SESSION='dt_session';
@@ -2042,7 +2042,7 @@ function saveSession(){
       stepStart:stepStart.getTime(),
       cur:cur,results:results,
       selCourse:selCourse,bookMin:bookMin,
-      totalPaused:totalPaused,
+      totalPaused:totalPaused,sessPaused:sessPaused,
       stepSec:stepSec,
       wasPaused:isPaused
     }));
@@ -2083,7 +2083,7 @@ function goHome(){
   /* 진행 중 상태 표시 */
   var done=Object.keys(results).length;
   var tot=activeSteps.length;
-  var elSec=sessStart?Math.floor((new Date()-sessStart-totalPaused)/1000):0;
+  var elSec=sessStart?Math.floor((new Date()-sessStart-sessPaused-totalPaused-(isPaused&&pauseStart?(new Date()-pauseStart):0))/1000):0;
   document.getElementById('home-modal-sub').textContent=
     (selCourse?(courses.find(function(x){return x.id===selCourse;})||{name:'세차'}).name:'세차')+
     ' 진행 중 · '+done+'/'+tot+' 단계 완료 · '+toHM(Math.round(elSec/60))+' 경과';
@@ -2102,7 +2102,7 @@ function homeAction(type){
         stepStart:stepStart.getTime(),
         cur:cur,results:results,
         selCourse:selCourse,bookMin:bookMin,
-        totalPaused:totalPaused,
+        totalPaused:totalPaused,sessPaused:sessPaused,
         stepSec:stepSec,
         wasPaused:true
       }));
@@ -2121,7 +2121,7 @@ function homeAction(type){
   } else if(type==='reset'){
     clearInterval(globalIv);clearInterval(stepIv);
     relWakeLock();clearSession();sessStart=null;
-    isPaused=false;pauseStart=null;totalPaused=0;suspended=false;
+    isPaused=false;pauseStart=null;totalPaused=0;sessPaused=0;suspended=false;
     document.getElementById('paused-banner').className='paused-banner';
     showApp(false);
     updateTimerTabBadge();
@@ -2150,7 +2150,7 @@ function resumeSession(){
   cur=s.cur||0;results=s.results||{};
   sessStart=new Date(s.sessStart);
   stepStart=new Date(s.stepStart);
-  totalPaused=s.totalPaused||0;
+  totalPaused=s.totalPaused||0;sessPaused=s.sessPaused||0;
   isPaused=false;pauseStart=null;suspended=false;
   stepSec=Math.max(0,Math.floor((Date.now()-stepStart.getTime()-totalPaused)/1000));
   setRootUI('timer');
@@ -2237,7 +2237,7 @@ function startApp(){
   }
   clearInterval(globalIv);clearInterval(stepIv);
   clearSession();
-  cur=0;results={};stepSec=0;totalPaused=0;isPaused=false;pauseStart=null;suspended=false;
+  cur=0;results={};stepSec=0;totalPaused=0;sessPaused=0;isPaused=false;pauseStart=null;suspended=false;
   document.getElementById('paused-banner').className='paused-banner';
   sessStart=new Date();stepStart=new Date();
   setRootUI('timer');
@@ -2284,18 +2284,31 @@ function startStepTimerFrom(fromSec){
   },1000);
 }
 
-function togglePause(){
-  isPaused=!isPaused;
+function pauseUI(){
   var banner=document.getElementById('paused-banner');
   banner.className='paused-banner'+(isPaused?' on':'');
-  if(isPaused){pauseStart=new Date();}
-  else{if(pauseStart)totalPaused+=(new Date()-pauseStart);pauseStart=null;tickGlobal();}
   document.querySelectorAll('.btn-pause-s').forEach(function(b){
     b.className='btn-pause-s'+(isPaused?' paused':'');
     b.innerHTML=isPaused
       ?'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 재개'
       :'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> 일시정지';
   });
+}
+/* 일시정지 중에 완료·스킵·이전 단계를 누르면 먼저 조용히 재개(멘트 없이)한 뒤 단계를 넘김 */
+function resumeQuiet(){
+  if(!isPaused)return;
+  isPaused=false;
+  if(pauseStart)totalPaused+=(new Date()-pauseStart);
+  pauseStart=null;
+  pauseUI();
+}
+/* 단계가 바뀔 때: 이번 단계의 일시정지 시간을 세션 누적으로 넘기고 초기화 */
+function stepPauseRoll(){sessPaused+=totalPaused;totalPaused=0;}
+function togglePause(){
+  isPaused=!isPaused;
+  if(isPaused){pauseStart=new Date();}
+  else{if(pauseStart)totalPaused+=(new Date()-pauseStart);pauseStart=null;tickGlobal();}
+  pauseUI();
   saveSession();
   updateTimerTabBadge();
   annSay(isPaused?'일시정지합니다.':'다시 시작합니다.');
@@ -2305,7 +2318,7 @@ function tickGlobal(){
   if(isPaused)return;
   var now=new Date();
   var pausedMs=totalPaused+(isPaused&&pauseStart?(now-pauseStart):0);
-  var elSec=Math.max(0,Math.floor((now-sessStart-pausedMs)/1000));
+  var elSec=Math.max(0,Math.floor((now-sessStart-sessPaused-pausedMs)/1000));
   document.getElementById('hdclock').textContent=toHHMM(now);
   document.getElementById('bsnow').textContent=toHHMM(now);
 
@@ -2357,14 +2370,14 @@ document.getElementById('scroll').addEventListener('click',function(e){
 });
 
 function completeStep(){
-  if(isPaused)togglePause();
+  resumeQuiet();
   if(cur>=activeSteps.length)return;
   var now=new Date();
   var pausedMs=totalPaused;
   var sec=Math.max(0,Math.floor((now-stepStart-pausedMs)/1000));
   var min=Math.max(1,Math.round(sec/60));
   results[cur]={doneStr:toHHMM(now),min:min};
-  cur++;stepSec=0;totalPaused=0;
+  cur++;stepSec=0;stepPauseRoll();
   if(cur>=activeSteps.length){clearInterval(stepIv);renderSteps();updateProg();showDone();return;}
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
@@ -2372,14 +2385,17 @@ function completeStep(){
 }
 function skipStep(){
   if(cur>=activeSteps.length)return;
-  results[cur]={skipped:true};cur++;stepSec=0;totalPaused=0;
+  resumeQuiet();
+  results[cur]={skipped:true};cur++;stepSec=0;stepPauseRoll();
   if(cur>=activeSteps.length){clearInterval(stepIv);renderSteps();updateProg();showDone();return;}
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
   voiceStep('건너뜁니다. ');
 }
 function undoStep(){
-  if(cur===0)return;cur--;delete results[cur];stepSec=0;totalPaused=0;
+  if(cur===0)return;
+  resumeQuiet();
+  cur--;delete results[cur];stepSec=0;stepPauseRoll();
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
   voiceStep('이전 단계로 돌아갑니다. ');
@@ -3610,7 +3626,7 @@ if(notiOK){
   navigator.serviceWorker.addEventListener('message',function(e){
     var d=e.data||{};if(d.type!=='dt-noti')return;
     if(!sessStart){return;}
-    if(d.action==='done'){if(isPaused)togglePause();completeStep();}
+    if(d.action==='done'){completeStep();}
     else if(d.action==='pause'){togglePause();}
   });
 }
@@ -3771,7 +3787,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.17', APP_BUILD='20261117.17';
+var APP_VER='1.0.18', APP_BUILD='20261119.18';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
