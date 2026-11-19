@@ -579,6 +579,22 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .log-step-delta{font-family:var(--mono);font-size:11px;}
 .log-step-delta.fast{color:var(--grn);}
 .log-step-delta.slow{color:var(--ora);}
+.log-upd-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 0;padding:9px;background:var(--acc3);border:1px solid rgba(58,125,0,.25);border-radius:8px;color:var(--acc);font-size:13px;font-weight:700;cursor:pointer;}
+.log-skip{color:var(--ora);font-size:12px;}
+.tu-row{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;}
+.tu-row.off{opacity:.6;}
+.tu-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tu-row .old{color:var(--tx3);text-decoration:line-through;font-family:var(--mono);font-size:12px;}
+.tu-row .new{font-weight:700;font-family:var(--mono);}
+.tu-row .new.up{color:var(--red);} .tu-row .new.dn{color:var(--grn);}
+.tu-row .act{font-size:11px;color:var(--tx3);white-space:nowrap;}
+.tu-row .act.warn{color:var(--ora);font-weight:700;}
+.tu-opt{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--b2);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;background:var(--s1);}
+.tu-opt.on{border-color:var(--acc);background:var(--acc3);}
+.tu-opt.dis{opacity:.45;pointer-events:none;}
+.tu-opt b{font-weight:700;}
+.tu-opt .d{font-size:11.5px;color:var(--tx2);margin-top:2px;line-height:1.45;}
+.tu-sec{font-size:12px;font-weight:700;color:var(--tx2);margin:4px 0 6px;}
 .log-del-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 2px;padding:9px;background:var(--red2);border:1px solid rgba(192,48,0,.2);border-radius:8px;color:var(--red);font-size:13px;cursor:pointer;}
 
 /* done overlay */
@@ -1054,7 +1070,7 @@ svg{display:block;}
     <div id="done-step-list" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;"></div>
     <div style="display:flex;gap:8px;">
       <button class="btn-sec" style="flex:1;height:38px;font-size:13px;" onclick="document.getElementById('done-update-box').style.display='none'">건너뛰기</button>
-      <button class="btn-primary" style="flex:2;height:38px;font-size:13px;" onclick="applyTimeUpdate()">이 시간으로 업데이트</button>
+      <button class="btn-primary" style="flex:2;height:38px;font-size:13px;" onclick="openTimeUpd(lastRecId)">업데이트 방법 고르기</button>
     </div>
   </div>
 
@@ -1241,6 +1257,23 @@ svg{display:block;}
 </div>
 
 <!-- 도움말 모달 -->
+ <div class="modal-bg" id="tu-modal" onclick="if(event.target===this)closeModal('tu-modal')">
+  <div class="modal-box">
+    <div class="modal-title">⏱ 기록으로 시간 업데이트</div>
+    <div style="font-size:12px;color:var(--tx2);margin:-4px 0 10px;line-height:1.5;" id="tu-sub"></div>
+    <div class="tu-sec">1. 바꿀 단계 고르기</div>
+    <div id="tu-list" style="display:flex;flex-direction:column;gap:5px;"></div>
+    <div style="font-size:11px;color:var(--tx3);margin:6px 2px 12px;" id="tu-note"></div>
+    <div class="tu-sec">2. 어디에 적용할까요?</div>
+    <div style="display:flex;flex-direction:column;gap:6px;" id="tu-opts">
+      <label class="tu-opt" data-v="new"><input type="radio" name="tu-scope" value="new"><div><b>새 나만의 코스로 저장</b> <span style="font-size:11px;color:var(--acc);font-weight:700;">기본</span><div class="d" id="tu-d-new"></div>
+        <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--tx2);margin-top:4px;"><input type="checkbox" id="tu-noskip" checked> 건너뛴 단계는 빼고 만들기</label></div></label>
+      <label class="tu-opt" data-v="course"><input type="radio" name="tu-scope" value="course"><div><b>이 코스에만</b><div class="d" id="tu-d-course"></div></div></label>
+      <label class="tu-opt" data-v="all"><input type="radio" name="tu-scope" value="all"><div><b>이 단계를 쓰는 모든 코스에</b><div class="d" id="tu-d-all"></div></div></label>
+    </div>
+    <div class="modal-actions"><button class="btn-sec" style="flex:1;" onclick="closeModal('tu-modal')">취소</button><button class="btn-primary" style="flex:2;" id="tu-apply" onclick="tuApply()">적용하기</button></div>
+  </div>
+</div>
 <div class="modal-bg" id="help-modal" onclick="if(event.target===this)closeModal('help-modal')">
   <div class="modal-box">
     <div class="modal-title">📖 도움말</div>
@@ -2550,7 +2583,7 @@ function saveHistory(early){
   var totalSec=Math.floor((new Date()-sessStart)/1000);
   var totalMin=Math.round(totalSec/60);
   var c=courses.find(function(x){return x.id===selCourse;});
-  var record={id:sessStart.getTime(),date:sessStart.toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}),startTime:toHHMM(sessStart),endTime:toHHMM(new Date()),courseName:c?c.name:'커스텀',courseIcon:c?c.icon:'🚗',endedEarly:!!early,pauseMin:Math.round((sessPaused+totalPaused)/60000),doneCount:Object.keys(results).length,totalMin:totalMin,estMin:activeSteps.reduce(function(a,s){return a+s.est;},0),bookMin:bookMin,steps:activeSteps.map(function(s,i){var r=results[i];return{name:s.name,est:s.est,skipped:r&&r.skipped,actual:r&&!r.skipped?r.min:null};})};
+  var record={id:sessStart.getTime(),date:sessStart.toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}),startTime:toHHMM(sessStart),endTime:toHHMM(new Date()),courseId:selCourse||null,courseName:c?c.name:'커스텀',courseIcon:c?c.icon:'🚗',endedEarly:!!early,pauseMin:Math.round((sessPaused+totalPaused)/60000),doneCount:Object.keys(results).length,totalMin:totalMin,estMin:activeSteps.reduce(function(a,s){return a+s.est;},0),bookMin:bookMin,steps:activeSteps.map(function(s,i){var r=results[i];return{id:s.id,name:s.name,est:s.est,skipped:r&&r.skipped,actual:r&&!r.skipped?r.min:null};})};
   var history=ls(K_HISTORY,[]);history.unshift(record);if(history.length>50)history=history.slice(0,50);
   ss(K_HISTORY,history);
 }
@@ -2567,8 +2600,8 @@ function renderSetupLogPanel(){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
-      +'<div class="log-del-btn" onclick="deleteSetupHist('+rec.id+')">이 기록 삭제</div></div>';
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'<span class="log-skip">⏭ 건너뜀</span>':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-upd-btn" onclick="openTimeUpd('+rec.id+')">⏱ 이 기록으로 시간 업데이트</div>'+'<div class="log-del-btn" onclick="deleteSetupHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
   });
@@ -2582,8 +2615,8 @@ function renderLogPanel(){
   history.forEach(function(rec){
     var entry=document.createElement('div');entry.className='log-entry';
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
-      +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'<span class="log-skip">⏭ 건너뜀</span>':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-upd-btn" onclick="openTimeUpd('+rec.id+')">⏱ 이 기록으로 시간 업데이트</div>'+'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
   });
@@ -2598,8 +2631,8 @@ function renderLogPanel(){
     var entry=document.createElement('div');entry.className='log-entry';
     var diff=rec.totalMin-rec.estMin;
     entry.innerHTML='<div class="log-head"><div class="log-date">'+rec.date+' '+rec.startTime+'</div><div class="log-course">'+rec.courseIcon+' '+rec.courseName+(rec.endedEarly?'<span class="log-early">중도 종료</span>':'')+'</div><div class="log-duration">'+kDur(rec.totalMin)+(rec.pauseMin>0?'<span class="log-pause"> · 정지 '+kDur(rec.pauseMin)+'</span>':'')+'</div><div class="log-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div></div>'
-      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'SKIP':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
-      +'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
+      +'<div class="log-steps">'+rec.steps.map(function(s,i){var delta='',deltaC='';if(!s.skipped&&s.actual){var d=s.actual-s.est;delta=d===0?'✓':d<0?'▲'+Math.abs(d)+'분':'▼'+d+'분';deltaC=d<=0?'fast':'slow';}return '<div class="log-step-row"><div class="log-step-n">'+(i+1)+'</div><div class="log-step-name">'+s.name+'</div><div class="log-step-actual">'+(s.skipped?'<span class="log-skip">⏭ 건너뜀</span>':s.actual?s.actual+'분':'—')+'</div><div class="log-step-delta '+deltaC+'">'+delta+'</div></div>';}).join('')
+      +'<div class="log-upd-btn" onclick="openTimeUpd('+rec.id+')">⏱ 이 기록으로 시간 업데이트</div>'+'<div class="log-del-btn" onclick="deleteHist('+rec.id+')">이 기록 삭제</div></div>';
     entry.querySelector('.log-head').addEventListener('click',function(){entry.classList.toggle('open');});
     panel.appendChild(entry);
   });
@@ -2607,7 +2640,118 @@ function renderLogPanel(){
 
 /* ══ DONE ══ */
 function ceil5(min){return Math.ceil(min/5)*5;}
-var pendingTimeUpdate=null;
+var pendingTimeUpdate=null, lastRecId=null;
+/* ══ 기록으로 시간 업데이트 (완료 화면·지난 기록 공용) ══ */
+var tuCtx=null;
+function tuFindCourse(rec){
+  var c=rec.courseId?courses.find(function(x){return x.id===rec.courseId;}):null;
+  if(!c)c=courses.find(function(x){return x.name===rec.courseName&&!x.empty;});
+  return c||null;
+}
+function tuFindStep(rs){
+  var s=rs.id?steps.find(function(x){return x.id===rs.id;}):null;
+  if(!s)s=steps.find(function(x){return x.name===rs.name;});
+  return s||null;
+}
+function openTimeUpd(recId){
+  var rec=ls(K_HISTORY,[]).find(function(r){return r.id===recId;});
+  if(!rec){alert('기록을 찾을 수 없어요.');return;}
+  var c=tuFindCourse(rec);
+  var rows=[],skipped=0,missing=0;
+  rec.steps.forEach(function(rs,i){
+    if(rs.skipped){skipped++;return;}
+    var st=tuFindStep(rs);
+    if(!st){missing++;return;}
+    if(!rs.actual)return;
+    var cur=c?stepEstIn(c,st):st.est;
+    var prop=ceil5(rs.actual);
+    var short=rs.actual<cur*0.5;
+    rows.push({sid:st.id,name:st.name,cur:cur,base:st.est,prop:prop,actual:rs.actual,short:short,on:prop!==cur&&!short});
+  });
+  var d=new Date(rec.id);
+  tuCtx={rec:rec,course:c,rows:rows,skipped:skipped,date:(d.getMonth()+1)+'/'+d.getDate()};
+  document.getElementById('tu-sub').textContent=rec.date+' '+rec.startTime+' · '+rec.courseName+' · 실제 기록을 5분 단위로 올려서 제안해요.';
+  var notes=[];if(skipped)notes.push('건너뛴 단계 '+skipped+'개는 목록에서 빠졌어요.');if(missing)notes.push('이름이 바뀌었거나 지운 단계 '+missing+'개는 연결할 수 없어요.');
+  notes.push('실제 시간이 예상의 절반 미만이면 시험 기록일 수 있어 기본으로 빼 두었어요.');
+  document.getElementById('tu-note').textContent=notes.join(' ');
+  tuRenderList();
+  var sel=document.querySelector('#tu-opts input[value="new"]');sel.checked=true;
+  document.querySelector('.tu-opt[data-v="course"]').classList.toggle('dis',!c);
+  document.getElementById('tu-d-new').textContent='이름: '+tuNewName()+' · 기존 코스는 그대로예요. 고르지 않은 단계는 지금 시간 그대로 들어가요.';
+  document.getElementById('tu-d-course').textContent=c?(c.name+'의 단계 시간만 바뀌어요. 다른 코스는 그대로예요.'):'원래 코스를 찾을 수 없어요(이름 변경·삭제).';
+  tuOptUI();
+  openModal('tu-modal');
+}
+function tuNewName(){var c=tuCtx.course;return (c?c.name:tuCtx.rec.courseName)+' ('+tuCtx.date+' 기록)';}
+function tuRenderList(){
+  var box=document.getElementById('tu-list');box.innerHTML='';
+  if(!tuCtx.rows.length){box.innerHTML='<div style="font-size:12px;color:var(--tx3);padding:8px;">반영할 수 있는 단계가 없어요.</div>';return;}
+  tuCtx.rows.forEach(function(r,i){
+    var el=document.createElement('label');el.className='tu-row'+(r.on?'':' off');
+    var same=r.prop===r.cur;
+    el.innerHTML='<input type="checkbox" '+(r.on?'checked':'')+(same?' disabled':'')+'><span class="nm">'+esc(r.name)+'</span>'
+      +(same?'<span class="act">변경 없음 '+r.cur+'분</span>':'<span class="old">'+r.cur+'분</span>→<span class="new '+(r.prop>r.cur?'up':'dn')+'">'+r.prop+'분</span>')
+      +'<span class="act'+(r.short?' warn':'')+'">'+(r.short?'너무 짧음 ':'')+'실제 '+r.actual+'분</span>';
+    el.querySelector('input').addEventListener('change',function(e){r.on=e.target.checked;el.classList.toggle('off',!r.on);tuOptUI();});
+    box.appendChild(el);
+  });
+}
+function tuScope(){var x=document.querySelector('#tu-opts input[name="tu-scope"]:checked');return x?x.value:'new';}
+function tuOptUI(){
+  document.querySelectorAll('.tu-opt').forEach(function(o){o.classList.toggle('on',o.querySelector('input').checked);});
+  var on=tuCtx.rows.filter(function(r){return r.on;});
+  var aff=[],kept=[];
+  courses.forEach(function(c){if(c.empty)return;var uses=on.filter(function(r){return (c.stepIds||[]).indexOf(r.sid)>=0;});if(!uses.length)return;
+    var own=uses.filter(function(r){return c.stepEst&&c.stepEst[r.sid]!=null&&!(tuCtx.course&&c.id===tuCtx.course.id);});
+    if(own.length===uses.length)kept.push(c.name);else aff.push(c.name);});
+  document.getElementById('tu-d-all').textContent=on.length?('단계 기본 시간이 바뀌어요 · 영향받는 코스 '+aff.length+'개'+(kept.length?(' · 코스 전용 시간을 직접 정한 '+kept.length+'개는 그대로'):'')):'먼저 바꿀 단계를 골라 주세요.';
+  var sc=tuScope();
+  document.getElementById('tu-apply').textContent=sc==='new'?'새 코스로 저장':'적용하기';
+}
+document.addEventListener('change',function(e){if(e.target&&e.target.name==='tu-scope')tuOptUI();});
+function tuApply(){
+  if(!tuCtx)return;
+  var sc=tuScope(),on=tuCtx.rows.filter(function(r){return r.on;}),c=tuCtx.course,msg='';
+  if(sc!=='new'&&!on.length){alert('바꿀 단계를 하나 이상 골라 주세요.');return;}
+  if(sc==='course'&&c&&(sessStart||loadSession())&&c.id===selCourse){alert('진행 중인 세차의 코스는 세차를 마친 뒤에 바꿀 수 있어요.');return;}
+  if(sc==='new'){
+    var noSkip=document.getElementById('tu-noskip').checked;
+    var ids=[],est={};
+    tuCtx.rec.steps.forEach(function(rs){
+      if(rs.skipped&&noSkip)return;
+      var st=tuFindStep(rs);if(!st||ids.indexOf(st.id)>=0)return;
+      ids.push(st.id);
+      var row=tuCtx.rows.find(function(r){return r.sid===st.id;});
+      var v=row?(row.on?row.prop:row.cur):(c?stepEstIn(c,st):st.est);
+      if(v!==st.est)est[st.id]=v;
+    });
+    if(!ids.length){alert('새 코스에 넣을 단계가 없어요.');return;}
+    var nc={id:uid(),icon:(c&&c.icon)||tuCtx.rec.courseIcon||'⭐',name:tuNewName(),rec:'기록으로 만든 코스',stepIds:ids,empty:false};
+    if(Object.keys(est).length)nc.stepEst=est;
+    var idx=c?courses.indexOf(c):-1;
+    if(idx>=0)courses.splice(idx+1,0,nc);else courses.push(nc);
+    msg='✓ 새 코스 \''+nc.name+'\'를 만들었어요';
+  } else if(sc==='course'){
+    if(!c)return;
+    c.stepEst=c.stepEst||{};
+    on.forEach(function(r){if(r.prop===r.base)delete c.stepEst[r.sid];else c.stepEst[r.sid]=r.prop;});
+    if(!Object.keys(c.stepEst).length)delete c.stepEst;
+    msg='✓ '+c.name+'의 단계 시간을 바꿨어요';
+  } else {
+    on.forEach(function(r){var st=steps.find(function(x){return x.id===r.sid;});if(st)st.est=r.prop;
+      if(c&&c.stepEst){delete c.stepEst[r.sid];if(!Object.keys(c.stepEst).length)delete c.stepEst;}});
+    saveSteps();
+    msg='✓ 단계 기본 시간을 바꿨어요';
+  }
+  saveCourses();
+  try{renderCoursesList();}catch(e){}
+  try{applyBookRec();}catch(e){}
+  renderSetup();
+  closeModal('tu-modal');
+  var ub=document.getElementById('done-update-box');if(ub)ub.style.display='none';
+  tuToast(msg);
+}
+function tuToast(t){document.querySelectorAll('.tu-toast').forEach(function(x){x.remove();});var el=document.createElement('div');el.className='tu-toast';el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accfill);color:#fff;font-size:13px;font-weight:600;padding:10px 20px;border-radius:20px;z-index:900;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:90vw;text-align:center;';el.textContent=t;document.body.appendChild(el);setTimeout(function(){el.remove();},2600);}
 
 function showDone(early){
   var totalSec=Math.floor((new Date()-sessStart)/1000);
@@ -2620,7 +2764,7 @@ function showDone(early){
   var fast=activeSteps.filter(function(_,i){return results[i]&&!results[i].skipped&&results[i].min<=activeSteps[i].est;}).length;
   var diff=washMin<=tot?'⚡ '+kDur(tot-washMin)+' 단축':'+'+kDur(washMin-tot);
   var handled=Object.keys(results).length;
-  saveHistory(!!early);
+  lastRecId=sessStart.getTime();saveHistory(!!early);
   clearSession();
   clearInterval(globalIv);clearInterval(stepIv);
   relWakeLock();sessStart=null;suspended=false;
@@ -3833,7 +3977,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.22', APP_BUILD='20261119.22';
+var APP_VER='1.0.23', APP_BUILD='20261119.23';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
