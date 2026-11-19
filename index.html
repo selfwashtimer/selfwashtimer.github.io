@@ -399,7 +399,16 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .sc.next{grid-column:1/-1;border-color:rgba(0,112,192,.35);}
 .sc.done{background:#f0f7e8;border-color:rgba(58,125,0,.3);}
 .sc.pending{opacity:.4;}
-.sc.skipped{opacity:.2;pointer-events:none;}
+.sc.skipped{background:#fbf3e9;border-color:rgba(192,96,0,.28);pointer-events:none;}
+.sc.skipped::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ora);border-radius:3px 0 0 3px;}
+.sc.skipped .ct-name{font-size:13px;color:var(--tx3);text-decoration:line-through;}
+.sc.skipped .nb{background:var(--ora2);color:var(--ora);}
+.sc.skipped .est-b{display:none;}
+.sc.skipped .done-b{display:block;color:var(--ora);background:var(--ora2);border-color:rgba(192,96,0,.2);}
+.sc.skipped .cd{display:flex;}
+.sc.skipped .ar{background:var(--ora2);border-color:rgba(192,96,0,.18);}
+.ar-d.skip{color:var(--ora);}
+.sc.skipped .ar-v{color:var(--ora);font-family:inherit;}
 .sc.active::before,.sc.done::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc);border-radius:3px 0 0 3px;}
 .sc.active::before{animation:pls 1.6s ease-in-out infinite;}
 .sc.next::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);border-radius:3px 0 0 3px;}
@@ -427,7 +436,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.5;}
 .sc.done .done-b{display:block;}
 .chk{width:18px;height:18px;border-radius:6px;background:var(--acc);display:none;align-items:center;justify-content:center;flex-shrink:0;}
 .sc.done .chk{display:flex;}
-.skip-lbl{font-size:10px;color:var(--tx3);font-family:var(--mono);display:none;}
+.skip-lbl{font-size:10.5px;font-weight:700;color:var(--ora);background:var(--ora2);border-radius:4px;padding:2px 7px;white-space:nowrap;display:none;}
 .sc.skipped .skip-lbl{display:block;}
 .sc.done .step-tmr,.sc.pending .step-tmr,.sc.done .next-badge,.sc.pending .next-badge,.sc.pending .done-b,.sc.pending .chk,.sc.pending .skip-lbl{display:none!important;}
 
@@ -823,7 +832,7 @@ svg{display:block;}
 [data-theme="dark"] .ah-stat.proj-col .ah-stat-lbl,[data-theme="dark"] .bot-item.proj .bot-item-lbl{color:var(--acc);}
 [data-theme="dark"] .modal-bg{background:rgba(0,0,0,.6);}
 [data-theme="dark"] .sc.pending{opacity:.62;}
-[data-theme="dark"] .sc.skipped{opacity:.42;}
+[data-theme="dark"] .sc.skipped{background:rgba(230,140,40,.08);}
 [data-theme="dark"] .prev-item.off{opacity:.55;}
 [data-theme="dark"] .ip-step.done-s{opacity:.65;}
 [data-theme="dark"] .dil-pen{opacity:.9;}
@@ -2386,7 +2395,7 @@ function completeStep(){
 function skipStep(){
   if(cur>=activeSteps.length)return;
   resumeQuiet();
-  results[cur]={skipped:true};cur++;stepSec=0;stepPauseRoll();
+  results[cur]={skipped:true,doneStr:toHHMM(new Date())};cur++;stepSec=0;stepPauseRoll();
   if(cur>=activeSteps.length){clearInterval(stepIv);renderSteps();updateProg();showDone();return;}
   renderSteps();updateProg();startStepTimer();scrollToCur();
   updateTimerTabBadge();
@@ -2417,6 +2426,7 @@ function renderSteps(){
     var res=results[i];
     var state=res?(res.skipped?'skipped':'done'):(i===cur?'active':(i===cur+1?'next':'pending'));
     var doneT='',actT='',deltaT='',deltaC='';
+    if(res&&res.skipped){doneT=res.doneStr||'';}
     if(res&&!res.skipped){
       doneT=res.doneStr;actT=res.min+'분';
       var d=res.min-s.est;
@@ -2424,7 +2434,7 @@ function renderSteps(){
       deltaC=d<=0?'fast':'slow';
     }
     var calcAmt=dilAmtText(s.id);
-    var showD=state==='active'||state==='done'||state==='next';
+    var showD=state==='active'||state==='done'||state==='next'||state==='skipped';
     var card=makeEl('div','sc '+state,'');card.id='sc-'+i;
 
     var ct=makeEl('div','ct','');
@@ -2445,7 +2455,7 @@ function renderSteps(){
     cr.appendChild(tmr);
     cr.appendChild(makeEl('div','done-b',doneT));
     cr.appendChild(makeEl('div','chk',svgChk(10)));
-    cr.appendChild(makeEl('div','skip-lbl','SKIP'));
+    cr.appendChild(makeEl('div','skip-lbl','⏭ 건너뜀'));
     ct.appendChild(cr);
     card.appendChild(ct);
 
@@ -2471,6 +2481,12 @@ function renderSteps(){
         ar.appendChild(makeEl('div','ar-v',actT));
         ar.appendChild(makeEl('div','ar-d '+deltaC,deltaT));
         cd.appendChild(ar);
+      } else if(res&&res.skipped){
+        var ars=makeEl('div','ar','');
+        ars.appendChild(makeEl('div','ar-l','결과'));
+        ars.appendChild(makeEl('div','ar-v','건너뜀'));
+        ars.appendChild(makeEl('div','ar-d skip','예상 '+s.est+'분 생략'));
+        cd.appendChild(ars);
       }
       card.appendChild(cd);
     }
@@ -3787,7 +3803,7 @@ function sendFeedback(){
 }
 /* 버전 표시·업데이트 확인
    ▼ 웹 파일을 고쳐 올릴 때: 아래 APP_BUILD와 version.json의 build를 같은 값으로 올려 주세요. */
-var APP_VER='1.0.18', APP_BUILD='20261119.18';
+var APP_VER='1.0.20', APP_BUILD='20261119.20';
 (function(){
   var last=0, remote=null, busy=false;
   function all(c){return Array.prototype.slice.call(document.querySelectorAll('.'+c));}
